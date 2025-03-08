@@ -46,3 +46,13 @@ gradlePlugin {
         }
     }
 }
+
+System.getenv("CI_PROJECT_ID")?.let {
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+
+    tasks {
+        val dependenciesForAll by registering(DependencyReportTask::class)
+    }
+}
