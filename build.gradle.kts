@@ -1,3 +1,5 @@
+import java.net.URI
+
 /*
  * Copyright 2025 (C) Karma Krafts & associates
  *
@@ -54,5 +56,48 @@ System.getenv("CI_PROJECT_ID")?.let {
 
     tasks {
         val dependenciesForAll by registering(DependencyReportTask::class)
+    }
+}
+
+publishing {
+    repositories {
+        System.getenv("CI_API_V4_URL")?.let { apiUrl ->
+            maven {
+                url = URI.create("$apiUrl/projects/${System.getenv("CI_PROJECT_ID")}/packages/maven")
+                name = "GitLab"
+                credentials(HttpHeaderCredentials::class) {
+                    name = "Job-Token"
+                    value = System.getenv("CI_JOB_TOKEN")
+                }
+                authentication {
+                    create("header", HttpHeaderAuthentication::class)
+                }
+            }
+        }
+    }
+    publications.configureEach {
+        if (this is MavenPublication) {
+            pom {
+                name = project.name
+                description = "Karma Krafts conventions and utilities plugin for Gradle."
+                url = System.getenv("CI_PROJECT_URL")
+                licenses {
+                    license {
+                        name = "Apache License 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "kitsunealex"
+                        name = "KitsuneAlex"
+                        url = "https://git.karmakrafts.dev/KitsuneAlex"
+                    }
+                }
+                scm {
+                    url = this@pom.url
+                }
+            }
+        }
     }
 }
