@@ -159,12 +159,12 @@ class GitLabPackageArtifact internal constructor(
             group = projectName
             doLast {
                 val url = "$packageUrl/$fileName"
-                println("Downloading $url..")
+                project.logger.lifecycle("Downloading $url..")
                 localPath.createDirectories()
                 fetchRaw(url)?.use {
                     Files.copy(it, localPath, StandardCopyOption.REPLACE_EXISTING)
                 }
-                println("Downloaded $localPath")
+                project.logger.lifecycle("Downloaded $localPath")
             }
             onlyIf { !localPath.exists() }
         }
@@ -177,13 +177,13 @@ class GitLabPackageArtifact internal constructor(
         mustRunAfter(downloadTask)
         from(project.zipTree(localPath.toFile()))
         into(outputDirectoryPath.toFile())
-        doLast { println("Extracted $localPath") }
+        doLast { project.logger.lifecycle("Extracted $localPath") }
     }
 
     val cleanTask: Task = project.tasks.maybeCreate("clean${projectName.capitalized()}${suffix.capitalized()}").apply {
         doLast {
             localPath.deleteIfExists()
-            println("Removed $localPath")
+            project.logger.lifecycle("Removed $localPath")
         }
     }
 }
@@ -208,11 +208,8 @@ object GitLabCI {
     }
 
     fun getDefaultVersion(baseVersion: Provider<String>): String {
-        return System.getenv("CI_COMMIT_TAG")?.let { baseVersion.get() } ?: "${baseVersion.get()}.${
-            System.getenv(
-                "CI_PIPELINE_IID"
-            ) ?: 0
-        }-SNAPSHOT"
+        return System.getenv("CI_COMMIT_TAG")?.let { baseVersion.get() }
+            ?: "${baseVersion.get()}.${System.getenv("CI_PIPELINE_IID") ?: 0}-SNAPSHOT"
     }
 
     fun RepositoryHandler.authenticatedPackageRegistry() {
