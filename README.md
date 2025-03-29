@@ -1,7 +1,10 @@
 # Karma Conventions
 
 [![](https://git.karmakrafts.dev/kk/karma-conventions/badges/master/pipeline.svg)](https://git.karmakrafts.dev/kk/karma-conventions/-/pipelines)
-[![](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Ffiles.karmakrafts.dev%2Fmaven%2Fio%2Fkarma%2Fconventions%2Fkarma-conventions%2Fmaven-metadata.xml)](https://git.karmakrafts.dev/kk/karma-conventions/-/packages)
+[![](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Fpublish%2Fstaging%2Fmaven2%2Fdev%2Fkarmakrafts%2Fconventions%2Fkarma-conventions%2Fmaven-metadata.xml
+)](https://git.karmakrafts.dev/kk/karma-conventions/-/packages)
+[![](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fdev%2Fkarmakrafts%2Fconventions%2Fkarma-conventions%2Fmaven-metadata.xml
+)](https://git.karmakrafts.dev/kk/karma-conventions/-/packages)
 
 Gradle conventions plugin for Karma Krafts projects.  
 This plugin provides many utilities, including but no limited to:
@@ -23,8 +26,9 @@ First, add the official Karma Krafts maven repository to your `settings.gradle.k
 ```kotlin
 pluginManagement {
     repositories {
-        // Snapshots are only available from the Karma Krafts repository
+        // Snapshots are available from the Karma Krafts repository or Maven Central Snapshots
         maven("https://files.karmakrafts.dev/maven")
+        maven("https://central.sonatype.com/repository/maven-snapshots")
         // Releases are mirrored to the central M2 repository
         mavenCentral()
     }
@@ -32,8 +36,9 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        // Snapshots are only available from the Karma Krafts repository
+        // Snapshots are available from the Karma Krafts repository or Maven Central Snapshots
         maven("https://files.karmakrafts.dev/maven")
+        maven("https://central.sonatype.com/repository/maven-snapshots")
         // Releases are mirrored to the central M2 repository
         mavenCentral()
     }
