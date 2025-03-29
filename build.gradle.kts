@@ -96,8 +96,8 @@ nexusPublishing {
     repositories {
         System.getenv("OSSRH_USERNAME")?.let { userName ->
             sonatype {
-                nexusUrl = URI.create("https://s01.oss.sonatype.org/service/local")
-                snapshotRepositoryUrl = URI.create("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                nexusUrl = URI.create("https://central.sonatype.com/publish/staging/maven2")
+                snapshotRepositoryUrl = URI.create("https://central.sonatype.com/repository/maven-snapshots")
                 username = userName
                 password = System.getenv("OSSRH_PASSWORD")
             }
