@@ -15,6 +15,8 @@
  */
 
 import java.net.URI
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
@@ -144,15 +146,16 @@ publishing {
     }
 }
 
+@OptIn(ExperimentalEncodingApi::class)
 signing {
     System.getenv("SIGNING_KEY_ID")?.let { keyId ->
         useInMemoryPgpKeys( // @formatter:off
             keyId,
-            System.getenv("SIGNING_PRIVATE_KEY"),
+            System.getenv("SIGNING_PRIVATE_KEY")?.let { encodedKey ->
+                Base64.decode(encodedKey).decodeToString()
+            },
             System.getenv("SIGNING_PASSWORD")
         ) // @formatter:on
-        for (publication in project.extensions.getByType(PublishingExtension::class).publications) {
-            sign(publication)
-        }
     }
+    sign(publishing.publications)
 }
