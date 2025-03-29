@@ -19,20 +19,23 @@ package dev.karmakrafts.conventions
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.plugins.signing.SigningExtension
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
  * Configures the PGP keys from given environment variables
  * SIGNING_KEY_ID, SIGNING_PRIVATE_KEY and SIGNING_PASSWORD if present.
  */
+@OptIn(ExperimentalEncodingApi::class)
 fun SigningExtension.signPublications() {
     System.getenv("SIGNING_KEY_ID")?.let { keyId ->
         useInMemoryPgpKeys( // @formatter:off
             keyId,
-            System.getenv("SIGNING_PRIVATE_KEY"),
+            System.getenv("SIGNING_PRIVATE_KEY")?.let { encodedKey ->
+                Base64.decode(encodedKey).decodeToString()
+            },
             System.getenv("SIGNING_PASSWORD")
         ) // @formatter:on
-        for (publication in project.extensions.getByType(PublishingExtension::class).publications) {
-            sign(publication)
-        }
+        sign(project.extensions.getByType<PublishingExtension>().publications)
     }
 }

@@ -27,6 +27,7 @@ plugins {
     `maven-publish`
     signing
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.gradleNexus)
 }
 
 group = "dev.karmakrafts.conventions"
@@ -91,6 +92,19 @@ System.getenv("CI_PROJECT_ID")?.let {
     }
 }
 
+nexusPublishing {
+    repositories {
+        System.getenv("OSSRH_USERNAME")?.let { userName ->
+            sonatype {
+                nexusUrl = URI.create("https://s01.oss.sonatype.org/service/local")
+                snapshotRepositoryUrl = URI.create("https://s01.oss.sonatype.org/content/repositories/snapshots")
+                username = userName
+                password = System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
 publishing {
     repositories {
         System.getenv("CI_API_V4_URL")?.let { apiUrl ->
@@ -110,7 +124,7 @@ publishing {
     publications.withType<MavenPublication>().configureEach {
         pom {
             name = project.name
-            description = "Karma Krafts conventions and utilities plugin for Gradle."
+            description = "Karma Krafts conventions and utilities plugin for Gradle"
             url = System.getenv("CI_PROJECT_URL")
             licenses {
                 license {

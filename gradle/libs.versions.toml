@@ -5,6 +5,7 @@ kotlinxSerialization = "1.8.0" # https://github.com/Kotlin/kotlinx.serialization
 kotlin = "2.1.10" # https://github.com/JetBrains/kotlin/releases
 kotlinxKover = "0.9.1" # https://github.com/Kotlin/kotlinx-kover/releases
 androidGradle = "8.7.3" # https://developer.android.com/reference/tools/gradle-api
+gradleNexus = "2.0.0" # https://github.com/gradle-nexus/publish-plugin/releases
 
 [libraries]
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
@@ -17,3 +18,4 @@ kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kotlinxKove
 android-library = { id = "com.android.library", version.ref = "androidGradle" }
 android-application = { id = "com.android.application", version.ref = "androidGradle" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinxSerialization" }
+gradleNexus = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "gradleNexus" }

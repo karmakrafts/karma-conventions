@@ -26,54 +26,6 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
 import java.net.URI
 
-/**
- * Adds MavenCentral as a publishing repository using
- * environment provided OSSRH_USERNAME and OSSRH_PASSWORD variables.
- */
-fun RepositoryHandler.authenticatedMavenCentral() {
-    System.getenv("OSSRH_USERNAME")?.let { userName ->
-        maven {
-            url = URI.create("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2")
-            name = "MavenCentral"
-            credentials {
-                username = userName
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-        }
-    }
-}
-
-/**
- * Adds MavenCentral Snapshots as a publishing repository using
- * environment provided OSSRH_USERNAME and OSSRH_PASSWORD variables.
- */
-fun RepositoryHandler.authenticatedMavenCentralSnapshots() {
-    System.getenv("OSSRH_USERNAME")?.let { userName ->
-        maven {
-            url = URI.create("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-            name = "MavenCentral"
-            credentials {
-                username = userName
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-        }
-    }
-}
-
-fun Project.authenticatedMavenCentral() {
-    pluginManager.withPlugin("maven-publish") {
-        extensions.getByType<PublishingExtension>().apply {
-            repositories {
-                if (version.toString().endsWith("-SNAPSHOT")) {
-                    authenticatedMavenCentralSnapshots()
-                    return@repositories
-                }
-                authenticatedMavenCentral()
-            }
-        }
-    }
-}
-
 fun MavenPom.karmaKraftsOrganization() {
     organization {
         name.set("Karma Krafts")
