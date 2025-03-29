@@ -89,32 +89,6 @@ System.getenv("CI_PROJECT_ID")?.let {
     }
 }
 
-fun RepositoryHandler.authenticatedMavenCentral() {
-    System.getenv("OSSRH_USERNAME")?.let { userName ->
-        maven {
-            url = URI.create("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2")
-            name = "MavenCentral"
-            credentials {
-                username = userName
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-        }
-    }
-}
-
-fun RepositoryHandler.authenticatedMavenCentralSnapshots() {
-    System.getenv("OSSRH_USERNAME")?.let { userName ->
-        maven {
-            url = URI.create("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-            name = "MavenCentral"
-            credentials {
-                username = userName
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-        }
-    }
-}
-
 publishing {
     repositories {
         System.getenv("CI_API_V4_URL")?.let { apiUrl ->
@@ -130,8 +104,6 @@ publishing {
                 }
             }
         }
-        if (version.toString().endsWith("-SNAPSHOT")) authenticatedMavenCentralSnapshots()
-        else authenticatedMavenCentral()
     }
     publications.withType<MavenPublication>().configureEach {
         pom {
