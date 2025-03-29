@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package io.karma.conventions
+package dev.karmakrafts.conventions
 
-import org.gradle.api.Task
-import org.gradle.api.tasks.TaskContainer
-import kotlin.io.path.createDirectories
-import kotlin.io.path.notExists
-
-fun TaskContainer.ensureBuildDirectory(): Task {
-    // Lazily registers this task when called and not present
-    return findByName("ensureBuildDirectory")
-        ?: maybeCreate("ensureBuildDirectory").apply {
-            val path = project.layout.buildDirectory.get().asFile.toPath()
-            doLast { path.createDirectories() }
-            onlyIf { path.notExists() }
-        }
+internal object BuildInfo {
+    val version: String =
+        BuildInfo::class.java.getResourceAsStream("/karma-conventions.version")?.bufferedReader().use {
+            it?.readText()
+        }!!
 }

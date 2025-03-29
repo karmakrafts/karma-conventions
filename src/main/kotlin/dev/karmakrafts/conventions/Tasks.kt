@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package io.karma.conventions
+package dev.karmakrafts.conventions
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.tasks.TaskContainer
+import kotlin.io.path.createDirectories
+import kotlin.io.path.notExists
 
-open class KarmaConventionsPlugin : Plugin<Project> {
-    override fun apply(target: Project) {}
+fun TaskContainer.ensureBuildDirectory(): Task {
+    // Lazily registers this task when called and not present
+    return findByName("ensureBuildDirectory") ?: maybeCreate("ensureBuildDirectory").apply {
+        val path = project.layout.buildDirectory.get().asFile.toPath()
+        doLast { path.createDirectories() }
+        onlyIf { path.notExists() }
+    }
 }

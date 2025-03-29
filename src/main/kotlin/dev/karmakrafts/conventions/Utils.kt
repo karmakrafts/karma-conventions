@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.karma.conventions
+package dev.karmakrafts.conventions
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -48,13 +48,10 @@ fun URLConnection.setDefaultUserAgent() {
 }
 
 inline fun fetchRaw(
-    address: String,
-    method: String = "GET",
-    request: HttpURLConnection.() -> Unit = {}
+    address: String, method: String = "GET", request: HttpURLConnection.() -> Unit = {}
 ): InputStream? {
     return try {
-        val connection = URI.create(address).toURL().openConnection()
-                as? HttpURLConnection ?: return null
+        val connection = URI.create(address).toURL().openConnection() as? HttpURLConnection ?: return null
         connection.setDefaultUserAgent()
         connection.requestMethod = method
         connection.request()
@@ -66,9 +63,7 @@ inline fun fetchRaw(
 
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> fetch(
-    address: String,
-    method: String = "GET",
-    request: HttpURLConnection.() -> Unit = {}
+    address: String, method: String = "GET", request: HttpURLConnection.() -> Unit = {}
 ): T? = try {
     fetchRaw(address, method, request)?.let { json.decodeFromStream<T>(it) }
 } catch (error: Throwable) {

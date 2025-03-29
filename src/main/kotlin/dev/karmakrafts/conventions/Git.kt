@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.karma.conventions
+package dev.karmakrafts.conventions
 
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec

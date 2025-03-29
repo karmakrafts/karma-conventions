@@ -1,10 +1,19 @@
 [versions]
-karmaConventions = "1.0.0"
-kotlinxSerialization = "1.8.0"
+java = "17"
+karmaConventions = "1.3.0"
+kotlinxSerialization = "1.8.0" # https://github.com/Kotlin/kotlinx.serialization/releases
+kotlin = "2.1.10" # https://github.com/JetBrains/kotlin/releases
+kotlinxKover = "0.9.1" # https://github.com/Kotlin/kotlinx-kover/releases
+androidGradle = "8.7.3" # https://developer.android.com/reference/tools/gradle-api
 
 [libraries]
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 [plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kotlinxKover" }
+android-library = { id = "com.android.library", version.ref = "androidGradle" }
+android-application = { id = "com.android.application", version.ref = "androidGradle" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinxSerialization" }

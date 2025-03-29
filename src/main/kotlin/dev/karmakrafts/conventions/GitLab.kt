@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.karma.conventions
+package dev.karmakrafts.conventions
 
 import kotlinx.serialization.Serializable
 import org.gradle.api.Project
@@ -22,6 +22,9 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.credentials.HttpHeaderCredentials
 import org.gradle.api.provider.Provider
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPom
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.diagnostics.DependencyReportTask
 import org.gradle.authentication.http.HttpHeaderAuthentication
@@ -30,6 +33,7 @@ import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.credentials
 import org.gradle.kotlin.dsl.maven
 import org.gradle.kotlin.dsl.maybeCreate
+import org.gradle.kotlin.dsl.withType
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -198,20 +202,15 @@ object GitLabCI {
     val isCI: Boolean
         get() = System.getenv("CI_PROJECT_ID") != null
 
-    fun Project.configureDefaults() {
-        if (isCI) {
-            dependencyLocking {
-                lockAllConfigurations()
-            }
-            tasks.maybeCreate("dependenciesForAll", DependencyReportTask::class)
-        }
-    }
-
     fun getDefaultVersion(baseVersion: Provider<String>): String {
         return System.getenv("CI_COMMIT_TAG")?.let { baseVersion.get() }
             ?: "${baseVersion.get()}.${System.getenv("CI_PIPELINE_IID") ?: 0}-SNAPSHOT"
     }
 
+    /**
+     * Adds GitLab Package Registry as a publishing repository for the current project using
+     * environment provided CI_API_V4_URL, CI_PROJECT_ID and CI_JOB_TOKEN variables.
+     */
     fun RepositoryHandler.authenticatedPackageRegistry() {
         System.getenv("CI_API_V4_URL")?.let { apiUrl ->
             maven {
@@ -225,6 +224,63 @@ object GitLabCI {
                     create("header", HttpHeaderAuthentication::class)
                 }
             }
+        }
+    }
+
+    fun MavenPom.defaultIssueManagement() {
+        System.getenv("CI_PROJECT_URL")?.let { projectUrl ->
+            issueManagement {
+                system.set("GitLab")
+                url.set("$projectUrl/-/issues")
+            }
+        }
+    }
+
+    fun MavenPom.defaultCiManagement() {
+        System.getenv("CI_PROJECT_URL")?.let { projectUrl ->
+            ciManagement {
+                system.set("GitLab")
+                url.set("$projectUrl/-/pipelines")
+            }
+        }
+    }
+
+    fun PublishingExtension.gitlabDefaults() {
+        repositories {
+            authenticatedPackageRegistry()
+        }
+        publications.withType<MavenPublication>().configureEach {
+            pom {
+                defaultIssueManagement()
+                defaultCiManagement()
+            }
+        }
+    }
+
+    fun PublishingExtension.karmaKraftsDefaults() {
+        gitlabDefaults()
+        publications.withType<MavenPublication>().configureEach {
+            pom {
+                karmaKraftsOrganization()
+            }
+        }
+    }
+
+    fun PublishingExtension.karmaStudiosDefaults() {
+        gitlabDefaults()
+        publications.withType<MavenPublication>().configureEach {
+            pom {
+                karmaStudiosOrganization()
+            }
+        }
+    }
+
+    fun Project.defaultDependencyLocking() {
+        if (isCI) {
+            dependencyLocking {
+                lockAllConfigurations()
+            }
+            tasks.maybeCreate("dependenciesForAll", DependencyReportTask::class)
         }
     }
 }
