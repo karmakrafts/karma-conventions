@@ -274,13 +274,4 @@ object GitLabCI {
             }
         }
     }
-
-    fun Project.defaultDependencyLocking() {
-        if (isCI) {
-            dependencyLocking {
-                lockAllConfigurations()
-            }
-            tasks.maybeCreate("dependenciesForAll", DependencyReportTask::class)
-        }
-    }
 }
