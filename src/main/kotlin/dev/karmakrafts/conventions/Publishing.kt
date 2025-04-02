@@ -16,15 +16,11 @@
 
 package dev.karmakrafts.conventions
 
-import org.gradle.api.Project
-import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPomLicenseSpec
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
-import java.net.URI
 
 fun MavenPom.karmaKraftsOrganization() {
     organization {
