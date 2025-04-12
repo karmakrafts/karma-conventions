@@ -83,6 +83,6 @@ publish:artifacts:
     - *if-main
     - *if-release
   script:
-    - ./gradlew clean publish closeStagingRepositories
+    - ./gradlew clean publish closeAndReleaseStagingRepositories
   tags:
     - macos
