@@ -27,12 +27,12 @@ plugins {
     `maven-publish`
     signing
     alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.gradleNexus)
+    alias(libs.plugins.gradle.nexus)
 }
 
 group = "dev.karmakrafts.conventions"
 
-val baseVersion = libs.versions.karmaConventions
+val baseVersion = libs.versions.karma.conventions
 version = System.getenv("CI_COMMIT_TAG")?.let { baseVersion.get() }
     ?: "${baseVersion.get()}.${System.getenv("CI_PIPELINE_IID") ?: 0}-SNAPSHOT"
 
@@ -96,7 +96,7 @@ nexusPublishing {
     repositories {
         System.getenv("OSSRH_USERNAME")?.let { userName ->
             sonatype {
-                nexusUrl = URI.create("https://central.sonatype.com")
+                nexusUrl = URI.create("https://ossrh-staging-api.central.sonatype.com/service/local/")
                 snapshotRepositoryUrl = URI.create("https://central.sonatype.com/repository/maven-snapshots/")
                 username = userName
                 password = System.getenv("OSSRH_PASSWORD")
