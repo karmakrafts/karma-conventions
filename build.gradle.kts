@@ -38,10 +38,6 @@ val baseVersion = libs.versions.karma.conventions
 version = System.getenv("CI_COMMIT_TAG")?.let { baseVersion.get() }
     ?: "${baseVersion.get()}.${System.getenv("CI_PIPELINE_IID") ?: 0}-SNAPSHOT"
 
-java {
-    withSourcesJar()
-}
-
 kotlin {
     jvmToolchain(libs.versions.java.get().toInt())
     sourceSets {
@@ -49,6 +45,11 @@ kotlin {
             resources.srcDir("build/generated")
         }
     }
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
 tasks {
@@ -63,6 +64,11 @@ tasks {
     }
     processResources { dependsOn(createVersionFile) }
     compileKotlin { dependsOn(processResources) }
+    val sourcesJar by getting { dependsOn(compileJava) }
+    named<Jar>("javadocJar") {
+        dependsOn(dokkaGeneratePublicationHtml)
+        from(dokkaGeneratePublicationHtml)
+    }
 }
 
 fun Provider<PluginDependency>.asLibrary(): Provider<String> {
@@ -107,12 +113,6 @@ dokka {
     }
 }
 
-val dokkaJar by tasks.registering(Jar::class) {
-    dependsOn(tasks.dokkaGeneratePublicationHtml)
-    from(tasks.dokkaGeneratePublicationHtml.flatMap { it.outputDirectory })
-    archiveClassifier.set("javadoc")
-}
-
 nexusPublishing {
     repositories {
         System.getenv("OSSRH_USERNAME")?.let { userName ->
@@ -143,7 +143,6 @@ publishing {
         }
     }
     publications.withType<MavenPublication>().configureEach {
-        artifact(dokkaJar)
         pom {
             name = project.name
             description = "Karma Krafts conventions and utilities plugin for Gradle"
@@ -182,8 +181,7 @@ publishing {
     }
 }
 
-@OptIn(ExperimentalEncodingApi::class)
-signing {
+@OptIn(ExperimentalEncodingApi::class) signing {
     System.getenv("SIGNING_KEY_ID")?.let { keyId ->
         useInMemoryPgpKeys( // @formatter:off
             keyId,
