@@ -18,6 +18,7 @@ package dev.karmakrafts.conventions
 
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithSimulatorTests
+import org.jetbrains.kotlin.konan.target.Family
 
 /**
  * A property that provides the appropriate binary suffix for the target.
@@ -29,7 +30,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithSimulatorTes
  * build variants for the same platform.
  */
 inline val KotlinNativeTarget.binarySuffix: String
-    get() = if (konanTarget.family.isAppleFamily) {
+    get() = if (konanTarget.family.isAppleFamily && konanTarget.family != Family.OSX) {
         if (this is KotlinNativeTargetWithSimulatorTests) "-simulator" else "-device"
     }
     else ""
