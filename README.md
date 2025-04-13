@@ -26,20 +26,14 @@ First, add the official Karma Krafts maven repository to your `settings.gradle.k
 ```kotlin
 pluginManagement {
     repositories {
-        // Snapshots are available from the Karma Krafts repository or Maven Central Snapshots
-        maven("https://files.karmakrafts.dev/maven")
         maven("https://central.sonatype.com/repository/maven-snapshots")
-        // Releases are mirrored to the central M2 repository
         mavenCentral()
     }
 }
 
 dependencyResolutionManagement {
     repositories {
-        // Snapshots are available from the Karma Krafts repository or Maven Central Snapshots
-        maven("https://files.karmakrafts.dev/maven")
         maven("https://central.sonatype.com/repository/maven-snapshots")
-        // Releases are mirrored to the central M2 repository
         mavenCentral()
     }
 }
