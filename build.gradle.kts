@@ -15,6 +15,7 @@
  */
 
 import java.net.URI
+import java.time.ZonedDateTime
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.io.path.createDirectories
@@ -26,6 +27,7 @@ plugins {
     `kotlin-dsl`
     `maven-publish`
     signing
+    alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.gradle.nexus)
 }
@@ -35,6 +37,10 @@ group = "dev.karmakrafts.conventions"
 val baseVersion = libs.versions.karma.conventions
 version = System.getenv("CI_COMMIT_TAG")?.let { baseVersion.get() }
     ?: "${baseVersion.get()}.${System.getenv("CI_PIPELINE_IID") ?: 0}-SNAPSHOT"
+
+java {
+    withSourcesJar()
+}
 
 kotlin {
     jvmToolchain(libs.versions.java.get().toInt())
@@ -92,6 +98,21 @@ System.getenv("CI_PROJECT_ID")?.let {
     }
 }
 
+dokka {
+    moduleName = project.name
+    pluginsConfiguration {
+        html {
+            footerMessage = "(c) ${ZonedDateTime.now().year} Karma Krafts & associates"
+        }
+    }
+}
+
+val dokkaJar by tasks.registering(Jar::class) {
+    dependsOn(tasks.dokkaGeneratePublicationHtml)
+    from(tasks.dokkaGeneratePublicationHtml.flatMap { it.outputDirectory })
+    archiveClassifier.set("javadoc")
+}
+
 nexusPublishing {
     repositories {
         System.getenv("OSSRH_USERNAME")?.let { userName ->
@@ -122,6 +143,7 @@ publishing {
         }
     }
     publications.withType<MavenPublication>().configureEach {
+        artifact(dokkaJar)
         pom {
             name = project.name
             description = "Karma Krafts conventions and utilities plugin for Gradle"
