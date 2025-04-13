@@ -21,6 +21,14 @@ import org.gradle.api.tasks.TaskContainer
 import kotlin.io.path.createDirectories
 import kotlin.io.path.notExists
 
+/**
+ * Creates a task that ensures the build directory exists.
+ * 
+ * This function either finds an existing task named "ensureBuildDirectory" or creates a new one.
+ * The task will create the build directory if it doesn't exist.
+ * 
+ * @return The task that ensures the build directory exists
+ */
 fun TaskContainer.ensureBuildDirectory(): Task {
     // Lazily registers this task when called and not present
     return findByName("ensureBuildDirectory") ?: maybeCreate("ensureBuildDirectory").apply {

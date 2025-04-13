@@ -19,6 +19,27 @@ package dev.karmakrafts.conventions
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 
+/**
+ * Registers a task for generating and reporting test coverage metrics.
+ * 
+ * This function applies the Kover plugin for Kotlin code coverage and creates a custom
+ * "testCoverage" task that:
+ * 1. Depends on the Kover XML report generation
+ * 2. Parses the XML report to extract instruction coverage data
+ * 3. Calculates and prints the total test coverage percentage
+ * 
+ * The coverage percentage is calculated as: (covered instructions / total instructions) * 100
+ * 
+ * Usage example:
+ * ```kotlin
+ * project.registerCoverageTask()
+ * ```
+ * 
+ * After registration, the task can be executed with:
+ * ```
+ * ./gradlew testCoverage
+ * ```
+ */
 fun Project.registerCoverageTask() {
     apply(plugin = "org.jetbrains.kotlinx.kover")
     tasks.register("testCoverage") {

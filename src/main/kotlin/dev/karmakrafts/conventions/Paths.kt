@@ -21,12 +21,57 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.div
 
+/**
+ * Provides direct access to the File object of a DirectoryProperty.
+ * 
+ * This extension property allows convenient access to the underlying File object
+ * of a Gradle DirectoryProperty without having to call get().asFile.
+ * 
+ * @return The File object representing this DirectoryProperty
+ */
 inline val DirectoryProperty.file: File
     get() = get().asFile
 
+/**
+ * Provides direct access to the Path object of a DirectoryProperty.
+ * 
+ * This extension property allows convenient access to the underlying Path object
+ * of a Gradle DirectoryProperty without having to call get().asFile.toPath().
+ * 
+ * @return The Path object representing this DirectoryProperty
+ */
 inline val DirectoryProperty.path: Path
     get() = get().asFile.toPath()
 
+/**
+ * Allows using the division operator to append a string path component to a DirectoryProperty.
+ * 
+ * This operator function enables a more concise and readable syntax for creating paths
+ * by combining a DirectoryProperty with a string path component.
+ * 
+ * Example:
+ * ```kotlin
+ * val newPath = project.layout.buildDirectory / "generated"
+ * ```
+ * 
+ * @param other The string path component to append
+ * @return A new Path that combines this DirectoryProperty with the given string
+ */
 operator fun DirectoryProperty.div(other: String): Path = path / other
 
+/**
+ * Allows using the division operator to append a Path to a DirectoryProperty.
+ * 
+ * This operator function enables a more concise and readable syntax for creating paths
+ * by combining a DirectoryProperty with another Path.
+ * 
+ * Example:
+ * ```kotlin
+ * val subPath = Paths.get("subdir")
+ * val newPath = project.layout.buildDirectory / subPath
+ * ```
+ * 
+ * @param other The Path to append
+ * @return A new Path that combines this DirectoryProperty with the given Path
+ */
 operator fun DirectoryProperty.div(other: Path): Path = path / other

@@ -23,8 +23,25 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
- * Configures the PGP keys from given environment variables
- * SIGNING_KEY_ID, SIGNING_PRIVATE_KEY and SIGNING_PASSWORD if present.
+ * Configures artifact signing using PGP keys from environment variables.
+ * 
+ * This extension function sets up the signing extension to use PGP keys provided
+ * through environment variables. It will automatically sign all publications
+ * defined in the publishing extension.
+ * 
+ * The following environment variables are used:
+ * - SIGNING_KEY_ID: The ID of the PGP key
+ * - SIGNING_PRIVATE_KEY: The Base64-encoded private key
+ * - SIGNING_PASSWORD: The password for the private key
+ * 
+ * If the SIGNING_KEY_ID environment variable is not set, signing will be skipped.
+ * 
+ * Example usage:
+ * ```kotlin
+ * signing {
+ *     signPublications()
+ * }
+ * ```
  */
 @OptIn(ExperimentalEncodingApi::class)
 fun SigningExtension.signPublications() {

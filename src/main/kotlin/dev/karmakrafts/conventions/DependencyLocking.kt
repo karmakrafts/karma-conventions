@@ -20,6 +20,22 @@ import com.android.build.gradle.internal.tasks.DependencyReportTask
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.maybeCreate
 
+/**
+ * Configures default dependency locking for a Gradle project.
+ * 
+ * This function enables dependency locking for all configurations in the project,
+ * which helps ensure reproducible builds by fixing dependency versions.
+ * It also creates a "dependenciesForAll" task that can be used to generate
+ * a comprehensive dependency report.
+ * 
+ * Dependency locking is particularly useful in multi-module projects to ensure
+ * consistent dependency versions across all modules.
+ * 
+ * Example usage:
+ * ```kotlin
+ * project.defaultDependencyLocking()
+ * ```
+ */
 fun Project.defaultDependencyLocking() {
     dependencyLocking {
         lockAllConfigurations()
