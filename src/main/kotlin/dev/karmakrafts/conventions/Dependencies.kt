@@ -21,18 +21,18 @@ import org.gradle.api.provider.Provider
 
 /**
  * Converts a dependency provider to an Android Archive (AAR) format.
- * 
+ *
  * This extension function takes a Provider of MinimalExternalModuleDependency and
  * transforms it to include the AAR suffix, which is required when referencing
  * Android library dependencies.
- * 
+ *
  * Example usage:
  * ```kotlin
  * dependencies {
  *     implementation(libs.androidx.appcompat.asAAR())
  * }
  * ```
- * 
+ *
  * @return A Provider of String representing the dependency with the AAR suffix
  */
 fun Provider<MinimalExternalModuleDependency>.asAAR(): Provider<String> {

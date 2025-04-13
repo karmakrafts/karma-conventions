@@ -21,10 +21,10 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithSimulatorTes
 
 /**
  * A property that provides the appropriate binary suffix for the target.
- * 
+ *
  * For Apple family targets, this returns either "-simulator" or "-device" depending on
  * whether the target is for simulator tests or not. For all other targets, it returns an empty string.
- * 
+ *
  * This suffix is used when constructing binary names to distinguish between different
  * build variants for the same platform.
  */

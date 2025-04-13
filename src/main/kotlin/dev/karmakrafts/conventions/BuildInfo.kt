@@ -18,14 +18,14 @@ package dev.karmakrafts.conventions
 
 /**
  * Internal object that provides build-related information for the Karma Conventions plugin.
- * 
+ *
  * This object contains properties that expose metadata about the current build,
  * such as version information.
  */
 internal object BuildInfo {
     /**
      * The current version of the Karma Conventions plugin.
-     * 
+     *
      * This property reads the version string from the "/karma-conventions.version" resource file.
      * The version is loaded once when the object is initialized.
      */

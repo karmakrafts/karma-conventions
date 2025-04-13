@@ -18,19 +18,20 @@ package dev.karmakrafts.conventions
 
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.extensions.stdlib.capitalized
-import org.gradle.kotlin.dsl.maybeCreate
+import org.gradle.kotlin.dsl.register
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
 /**
  * Represents a Git repository that can be cloned and updated as part of the build process.
- * 
+ *
  * This class creates and manages Gradle tasks for cloning and pulling from a Git repository.
  * It automatically sets up the necessary task dependencies and conditions to ensure the
  * repository is available when needed.
- * 
+ *
  * @property project The Gradle project this repository is associated with
  * @property name The name of the repository (used for the local directory name)
  * @property address The Git URL of the repository
@@ -51,11 +52,11 @@ class GitRepository internal constructor( // @formatter:off
 
     /**
      * Gradle task that clones the repository if it doesn't exist locally.
-     * 
+     *
      * This task automatically depends on the build directory creation task and
      * will only execute if the repository hasn't been cloned yet.
      */
-    val cloneTask: Exec = project.tasks.maybeCreate("clone${name.replace("-", "").capitalized()}", Exec::class).apply {
+    val cloneTask: TaskProvider<Exec> = project.tasks.register<Exec>("clone${name.replace("-", "").capitalized()}") {
         group = this@GitRepository.group
         dependsOn(project.tasks.ensureBuildDirectory())
         workingDir = project.layout.buildDirectory.file
@@ -67,11 +68,11 @@ class GitRepository internal constructor( // @formatter:off
 
     /**
      * Gradle task that pulls the latest changes from the repository.
-     * 
+     *
      * This task automatically depends on the clone task and will only execute
      * if the repository has already been cloned.
      */
-    val pullTask: Exec = project.tasks.maybeCreate("pull${name.replace("-", "").capitalized()}", Exec::class).apply {
+    val pullTask: TaskProvider<Exec> = project.tasks.register<Exec>("pull${name.replace("-", "").capitalized()}") {
         group = this@GitRepository.group
         dependsOn(cloneTask)
         workingDir = localPath.toFile()
@@ -82,11 +83,11 @@ class GitRepository internal constructor( // @formatter:off
 
 /**
  * Creates and configures a Git repository for use in a Gradle build.
- * 
+ *
  * This extension function creates a GitRepository instance that can be used to clone
  * and update external Git repositories as part of the build process. It automatically
  * sets up the necessary Gradle tasks for cloning and pulling.
- * 
+ *
  * Example usage:
  * ```kotlin
  * val myRepo = project.gitRepository(
@@ -94,11 +95,11 @@ class GitRepository internal constructor( // @formatter:off
  *     address = "https://github.com/example/repo.git",
  *     tag = "v1.0.0"
  * )
- * 
+ *
  * // Now you can depend on the repository tasks
  * tasks.named("build").dependsOn(myRepo.pullTask)
  * ```
- * 
+ *
  * @param name The name of the repository (used for the local directory name)
  * @param address The Git URL of the repository
  * @param tag Optional tag or branch to checkout (if null, uses the default branch)

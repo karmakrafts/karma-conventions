@@ -29,10 +29,10 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
  * Converts an integer Java version number to a JavaVersion enum value.
- * 
+ *
  * This extension function takes an integer representing a Java major version
  * (e.g., 8, 11, 17) and returns the corresponding JavaVersion enum value.
- * 
+ *
  * @return The JavaVersion enum value corresponding to this integer
  * @throws IllegalArgumentException if the integer does not correspond to a valid Java version
  */
@@ -44,14 +44,14 @@ fun Int.toJavaVersion(): JavaVersion {
 
 /**
  * Configures Java version settings for various plugins in a Gradle project.
- * 
+ *
  * This function automatically detects and configures Java version settings for:
  * - Java plugin (toolchain, source and target compatibility)
  * - Kotlin JVM plugin (JVM toolchain)
  * - Kotlin Multiplatform plugin (JVM toolchain)
  * - Android Library plugin (source and target compatibility)
  * - Android Application plugin (source and target compatibility)
- * 
+ *
  * @param version The Java version to configure (as an integer, e.g., 8, 11, 17)
  */
 fun Project.configureJava(version: Int) {
@@ -99,11 +99,11 @@ fun Project.configureJava(version: Int) {
 
 /**
  * Configures Java version settings using a string provider.
- * 
+ *
  * This is a convenience overload that accepts a Provider<String> containing
  * the Java version number as a string. The string is converted to an integer
  * and passed to the main configureJava function.
- * 
+ *
  * @param provider A provider for the Java version as a string
  * @see configureJava
  */

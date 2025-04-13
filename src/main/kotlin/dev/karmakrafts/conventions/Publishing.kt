@@ -24,10 +24,10 @@ import org.gradle.kotlin.dsl.withType
 
 /**
  * Configures the Maven POM with Karma Krafts organization information.
- * 
+ *
  * This extension function sets up the organization and developers sections
  * of a Maven POM with standard Karma Krafts information.
- * 
+ *
  * Example usage:
  * ```kotlin
  * publishing {
@@ -59,10 +59,10 @@ fun MavenPom.karmaKraftsOrganization() {
 
 /**
  * Configures the Maven POM with Karma Studios organization information.
- * 
+ *
  * This extension function sets up the organization and developers sections
  * of a Maven POM with standard Karma Studios information.
- * 
+ *
  * Example usage:
  * ```kotlin
  * publishing {
@@ -94,7 +94,7 @@ fun MavenPom.karmaStudiosOrganization() {
 
 /**
  * Adds the Apache License 2.0 to a Maven POM license specification.
- * 
+ *
  * This extension function configures a license entry for the Apache License 2.0
  * in the licenses section of a Maven POM.
  */
@@ -107,7 +107,7 @@ fun MavenPomLicenseSpec.apache2() {
 
 /**
  * Adds the Mozilla Public License 2.0 to a Maven POM license specification.
- * 
+ *
  * This extension function configures a license entry for the Mozilla Public License 2.0
  * in the licenses section of a Maven POM.
  */
@@ -120,7 +120,7 @@ fun MavenPomLicenseSpec.mplV2() {
 
 /**
  * Adds the GNU General Public License 3.0 to a Maven POM license specification.
- * 
+ *
  * This extension function configures a license entry for the GNU General Public License 3.0
  * in the licenses section of a Maven POM.
  */
@@ -133,10 +133,10 @@ fun MavenPomLicenseSpec.gplV3() {
 
 /**
  * Configures all Maven publications with the Apache License 2.0.
- * 
+ *
  * This extension function applies the Apache License 2.0 to all Maven publications
  * in the publishing extension.
- * 
+ *
  * Example usage:
  * ```kotlin
  * publishing {
@@ -156,10 +156,10 @@ fun PublishingExtension.apache2License() {
 
 /**
  * Configures all Maven publications with the Mozilla Public License 2.0.
- * 
+ *
  * This extension function applies the Mozilla Public License 2.0 to all Maven publications
  * in the publishing extension.
- * 
+ *
  * Example usage:
  * ```kotlin
  * publishing {
@@ -179,10 +179,10 @@ fun PublishingExtension.mplV2License() {
 
 /**
  * Configures all Maven publications with the GNU General Public License 3.0.
- * 
+ *
  * This extension function applies the GNU General Public License 3.0 to all Maven publications
  * in the publishing extension.
- * 
+ *
  * Example usage:
  * ```kotlin
  * publishing {
@@ -202,10 +202,10 @@ fun PublishingExtension.gplV3License() {
 
 /**
  * Configures basic project information for all Maven publications.
- * 
+ *
  * This extension function sets the name, description, and URL for all Maven
  * publications in the publishing extension.
- * 
+ *
  * Example usage:
  * ```kotlin
  * publishing {
@@ -215,7 +215,7 @@ fun PublishingExtension.gplV3License() {
  *     )
  * }
  * ```
- * 
+ *
  * @param name The name of the project
  * @param description A description of the project
  * @param url The URL of the project (defaults to a Karma Krafts GitLab URL based on the name)
