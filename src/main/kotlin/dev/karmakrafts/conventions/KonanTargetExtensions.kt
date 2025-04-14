@@ -68,4 +68,4 @@ fun KonanTarget.toTargetPair(): String = "${familyName}-${architectureName}"
  *
  * @return A string in the format "FamilyArchitecture" with capitalized components
  */
-fun KonanTarget.toTaskSuffix(): String = "${familyName.capitalized()}${architectureName.capitalized()}"
+fun KonanTarget.toTaskSuffix(): String = "$familyName${architectureName.capitalized()}"

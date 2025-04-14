@@ -16,7 +16,9 @@
 
 package dev.karmakrafts.conventions
 
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
@@ -38,10 +40,14 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.inputStream
+import kotlin.io.path.outputStream
 
 /**
  * Represents a GitLab server instance for interacting with GitLab API.
@@ -85,18 +91,6 @@ class GitLabServer internal constructor( // @formatter:off
 }
 
 /**
- * Data class representing basic information about a GitLab project.
- *
- * This class is used to deserialize project information from the GitLab API.
- *
- * @property id The numeric ID of the GitLab project
- */
-@Serializable
-data class GitLabProjectInfo(
-    val id: Long
-)
-
-/**
  * Represents a GitLab project and provides access to its resources.
  *
  * This class encapsulates a GitLab project and provides access to its
@@ -113,10 +107,36 @@ class GitLabProject internal constructor( // @formatter:off
     val name: String,
     givenId: Long?
 ) { // @formatter:on
+    private fun computeProjectInfoHash(): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        digest.update("${server.address}-$name".encodeToByteArray())
+        return digest.digest().joinToString("") { "%02x".format(it) }
+    }
+
+    private fun getCacheDirectory(): Path {
+        return server.projectGetter().layout.buildDirectory.file.toPath() / "gitlabCache"
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    private fun loadProjectInfo(): GitLabAPI.ProjectInfo? {
+        val cacheDir = getCacheDirectory()
+        cacheDir.createDirectories() // Create directories on demand
+        val cacheFile = cacheDir / "${computeProjectInfoHash()}.json"
+        if (server.projectGetter().isOffline) {
+            if (!cacheFile.exists()) return null
+            return cacheFile.inputStream().use { json.decodeFromStream(it) }
+        }
+        val info = fetch<GitLabAPI.ProjectInfo>(endpoint) ?: return null
+        cacheFile.deleteIfExists()
+        cacheFile.outputStream(StandardOpenOption.CREATE_NEW).use { json.encodeToStream(info, it) }
+        return info
+    }
+
     /**
      * The project information fetched from the GitLab API.
      */
-    val projectInfo: GitLabProjectInfo = requireNotNull(fetch(endpoint)) { "Could not fetch project info" }
+    val projectInfo: GitLabAPI.ProjectInfo =
+        requireNotNull(loadProjectInfo()) { "Could not load project info for $name" }
 
     /**
      * The numeric ID of the project.
@@ -265,7 +285,7 @@ class GitLabPackageArtifact internal constructor(
 ) {
     private val projectName: String = packageInstance.packageRegistry.project.name
 
-    private inline val project: Project
+    internal inline val project: Project
         get() = packageInstance.packageRegistry.project.server.projectGetter()
 
     /**
@@ -304,7 +324,7 @@ class GitLabPackageArtifact internal constructor(
                 }
                 project.logger.lifecycle("Downloaded $localPath")
             }
-            onlyIf { !localPath.exists() }
+            onlyIf { !project.isOffline && !localPath.exists() }
         }
 
     /**
