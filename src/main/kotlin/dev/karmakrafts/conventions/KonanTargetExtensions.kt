@@ -16,6 +16,7 @@
 
 package dev.karmakrafts.conventions
 
+import org.gradle.internal.extensions.stdlib.capitalized
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
@@ -58,3 +59,13 @@ val KonanTarget.architectureName: String
  * @return A string in the format "family-architecture"
  */
 fun KonanTarget.toTargetPair(): String = "${familyName}-${architectureName}"
+
+/**
+ * Creates a capitalized task suffix string by combining family and architecture.
+ *
+ * This function generates a string in the format "FamilyArchitecture" (e.g., "MacosX64",
+ * "LinuxArm64") that is suitable for use in Gradle task names.
+ *
+ * @return A string in the format "FamilyArchitecture" with capitalized components
+ */
+fun KonanTarget.toTaskSuffix(): String = "${familyName.capitalized()}${architectureName.capitalized()}"

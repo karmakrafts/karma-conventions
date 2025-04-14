@@ -27,6 +27,12 @@ import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
+private const val JAVA_PLUGIN_ID: String = "java"
+private const val KOTLIN_JVM_PLUGIN_ID: String = "org.jetbrains.kotlin.jvm"
+private const val KOTLIN_MP_PLUGIN_ID: String = "org.jetbrains.kotlin.multiplatform"
+private const val ANDROID_LIB_PLUGIN_ID: String = "com.android.library"
+private const val ANDROID_APP_PLUGIN_ID: String = "com.android.application"
+
 /**
  * Converts an integer Java version number to a JavaVersion enum value.
  *
@@ -56,7 +62,7 @@ fun Int.toJavaVersion(): JavaVersion {
  */
 fun Project.configureJava(version: Int) {
     project.pluginManager.apply {
-        withPlugin("java") {
+        if (hasPlugin(JAVA_PLUGIN_ID)) withPlugin(JAVA_PLUGIN_ID) {
             extensions.getByType<JavaPluginExtension>().apply {
                 toolchain {
                     languageVersion.set(JavaLanguageVersion.of(version))
@@ -66,19 +72,19 @@ fun Project.configureJava(version: Int) {
                 targetCompatibility = javaVersion
             }
         }
-        withPlugin("org.jetbrains.kotlin.jvm") {
+        if (hasPlugin(KOTLIN_JVM_PLUGIN_ID)) withPlugin(KOTLIN_JVM_PLUGIN_ID) {
             logger.info("Found Kotlin JVM plugin, adjusting Java version")
             extensions.getByType(KotlinJvmExtension::class).apply {
                 jvmToolchain(version)
             }
         }
-        withPlugin("org.jetbrains.kotlin.multiplatform") {
+        if (hasPlugin(KOTLIN_MP_PLUGIN_ID)) withPlugin(KOTLIN_MP_PLUGIN_ID) {
             logger.info("Found Kotlin Multiplatform plugin, adjusting Java version")
             extensions.getByType<KotlinMultiplatformExtension>().apply {
                 jvmToolchain(version)
             }
         }
-        withPlugin("com.android.library") {
+        if (hasPlugin(ANDROID_LIB_PLUGIN_ID)) withPlugin(ANDROID_LIB_PLUGIN_ID) {
             logger.info("Found Android Library plugin, adjusting Java version")
             extensions.getByType<LibraryExtension>().compileOptions {
                 val javaVersion = version.toJavaVersion()
@@ -86,7 +92,7 @@ fun Project.configureJava(version: Int) {
                 targetCompatibility = javaVersion
             }
         }
-        withPlugin("com.android.application") {
+        if (hasPlugin(ANDROID_APP_PLUGIN_ID)) withPlugin(ANDROID_APP_PLUGIN_ID) {
             logger.info("Found Android Application plugin, adjusting Java version")
             extensions.getByType<ApplicationExtension>().compileOptions {
                 val javaVersion = version.toJavaVersion()
