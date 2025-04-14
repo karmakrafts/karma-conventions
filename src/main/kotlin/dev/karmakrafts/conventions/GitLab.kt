@@ -17,8 +17,8 @@
 package dev.karmakrafts.conventions
 
 import kotlinx.serialization.Serializable
-import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.credentials.HttpHeaderCredentials
 import org.gradle.api.provider.Provider
@@ -53,11 +53,9 @@ import kotlin.io.path.exists
  * @property address The address of the GitLab server (e.g., "gitlab.com")
  */
 class GitLabServer internal constructor( // @formatter:off
-    val project: Project,
-    val address: String
+    val address: String,
+    val projectGetter: () -> Project
 ) { // @formatter:on
-    private val projects: HashMap<String, GitLabProject> = HashMap()
-
     /**
      * The base URL for the GitLab API.
      */
@@ -71,8 +69,7 @@ class GitLabServer internal constructor( // @formatter:off
      * @return A GitLabProject instance representing the specified project
      */
     fun project(path: String, name: String = path.substringAfterLast('/')): GitLabProject {
-        val endpoint = "$apiUrl/projects/${path.percentEncode()}"
-        return projects.getOrPut(endpoint) { GitLabProject(this, endpoint, name, null) }
+        return GitLabProject(this, "$apiUrl/projects/${path.percentEncode()}", name, null)
     }
 
     /**
@@ -83,8 +80,7 @@ class GitLabServer internal constructor( // @formatter:off
      * @return A GitLabProject instance representing the specified project
      */
     fun project(id: Long, name: String = id.toString()): GitLabProject {
-        val endpoint = "$apiUrl/projects/$id"
-        return projects.getOrPut(endpoint) { GitLabProject(this, endpoint, name, id) }
+        return GitLabProject(this, "$apiUrl/projects/$id", name, id)
     }
 }
 
@@ -150,8 +146,6 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
     val project: GitLabProject,
     val endpoint: String
 ) { // @formatter:on
-    private val packages: HashMap<String, GitLabPackage> = HashMap()
-
     /**
      * Gets a package by its path.
      *
@@ -159,8 +153,7 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
      * @return A GitLabPackage instance representing the specified package
      */
     operator fun get(path: String): GitLabPackage {
-        val url = "$endpoint/$path"
-        return packages.getOrPut(url) { GitLabPackage(this, url) }
+        return GitLabPackage(this, "$endpoint/$path")
     }
 
     /**
@@ -171,8 +164,7 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
      * @return A GitLabPackage instance representing the specified package version
      */
     operator fun get(path: String, version: String): GitLabPackage {
-        val url = "$endpoint/$path/$version"
-        return packages.getOrPut(url) { GitLabPackage(this, url) }
+        return GitLabPackage(this, "$endpoint/$path/$version")
     }
 
     /**
@@ -183,8 +175,7 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
      * @return A GitLabPackage instance representing the specified package version
      */
     operator fun get(path: String, version: Provider<in String>): GitLabPackage {
-        val url = "$endpoint/$path/${version.get()}"
-        return packages.getOrPut(url) { GitLabPackage(this, url) }
+        return GitLabPackage(this, "$endpoint/$path/${version.get()}")
     }
 }
 
@@ -224,21 +215,6 @@ class GitLabPackage internal constructor( // @formatter:off
     val packageRegistry: GitLabPackageRegistry,
     val url: String
 ) { // @formatter:on
-    private val artifacts: HashMap<String, GitLabPackageArtifact> = HashMap()
-
-    /**
-     * Generates a unique key for an artifact based on its file name, suffix, and directory name.
-     *
-     * @param fileName The name of the artifact file
-     * @param suffix The suffix to append to the artifact key
-     * @param directoryName The directory name for the artifact
-     * @return A unique key for the artifact
-     */
-    private fun getArtifactKey(fileName: String, suffix: String, directoryName: String): String {
-        return if (suffix.isEmpty()) fileName
-        else "$fileName:$suffix@$directoryName"
-    }
-
     /**
      * Gets an artifact by its file name, suffix, and directory name.
      *
@@ -250,11 +226,7 @@ class GitLabPackage internal constructor( // @formatter:off
     operator fun get(
         fileName: String, suffix: String = "", directoryName: String = packageRegistry.project.name
     ): GitLabPackageArtifact {
-        return artifacts.getOrPut(getArtifactKey(fileName, suffix, directoryName)) {
-            GitLabPackageArtifact(
-                this, url, fileName, suffix, directoryName
-            )
-        }
+        return GitLabPackageArtifact(this, url, fileName, suffix, directoryName)
     }
 
     /**
@@ -268,12 +240,7 @@ class GitLabPackage internal constructor( // @formatter:off
     operator fun get(
         fileName: Provider<String>, suffix: String = "", directoryName: String = packageRegistry.project.name
     ): GitLabPackageArtifact {
-        val actualFileName = fileName.get()
-        return artifacts.getOrPut(getArtifactKey(actualFileName, suffix, directoryName)) {
-            GitLabPackageArtifact(
-                this, url, actualFileName, suffix, directoryName
-            )
-        }
+        return GitLabPackageArtifact(this, url, fileName.get(), suffix, directoryName)
     }
 }
 
@@ -297,7 +264,9 @@ class GitLabPackageArtifact internal constructor(
     val directoryName: String
 ) {
     private val projectName: String = packageInstance.packageRegistry.project.name
-    private val project: Project = packageInstance.packageRegistry.project.server.project
+
+    private inline val project: Project
+        get() = packageInstance.packageRegistry.project.server.projectGetter()
 
     /**
      * The local directory path where the artifact will be downloaded.
@@ -323,8 +292,8 @@ class GitLabPackageArtifact internal constructor(
      *
      * This task will only execute if the artifact hasn't been downloaded yet.
      */
-    val downloadTask: TaskProvider<DefaultTask> =
-        project.tasks.register<DefaultTask>("download${projectName.capitalized()}${suffix.capitalized()}") {
+    val downloadTask: TaskProvider<Task> =
+        project.tasks.register("download${projectName.capitalized()}${suffix.capitalized()}") {
             group = projectName
             doLast {
                 val url = "$packageUrl/$fileName"
@@ -360,16 +329,14 @@ class GitLabPackageArtifact internal constructor(
      *
      * This task can be used to clean up the downloaded artifact file.
      */
-    val cleanTask: TaskProvider<DefaultTask> =
-        project.tasks.register<DefaultTask>("clean${projectName.capitalized()}${suffix.capitalized()}") {
-            doLast {
+    val cleanTask: TaskProvider<Task> =
+        project.tasks.register("clean${projectName.capitalized()}${suffix.capitalized()}") {
+            doFirst {
                 localPath.deleteIfExists()
                 project.logger.lifecycle("Removed $localPath")
             }
         }
 }
-
-private val gitlabServers: HashMap<String, GitLabServer> = HashMap()
 
 /**
  * Gets or creates a GitLab server instance for the specified address.
@@ -382,7 +349,7 @@ private val gitlabServers: HashMap<String, GitLabServer> = HashMap()
  */
 fun Project.gitlab(
     address: String = "git.karmakrafts.dev"
-): GitLabServer = gitlabServers.getOrPut(address) { GitLabServer(this, address) }
+): GitLabServer = GitLabServer(address) { this }
 
 /**
  * Utility object for working with GitLab CI/CD.
