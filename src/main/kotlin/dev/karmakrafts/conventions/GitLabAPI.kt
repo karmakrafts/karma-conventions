@@ -171,6 +171,14 @@ object GitLabAPI {
             else -> null
         }
 
+        inline val hash: String?
+            get() = when {
+                fileSha256 != null -> fileSha256
+                fileSha1 != null -> fileSha1
+                fileMd5 != null -> fileMd5
+                else -> null
+            }
+
         /**
          * Indicates whether this package file has a hash value.
          *

@@ -48,6 +48,7 @@ import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
+import kotlin.io.path.readBytes
 
 /**
  * Represents a GitLab server instance for interacting with GitLab API.
@@ -166,6 +167,30 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
     val project: GitLabProject,
     val endpoint: String
 ) { // @formatter:on
+    companion object {
+        private const val PACKAGE_FILE_COUNT: Int = 100
+    }
+
+    val packages: List<GitLabAPI.Package> by lazy { fetch(endpoint) ?: emptyList() }
+    private val packageFiles: HashMap<String, List<GitLabAPI.PackageFile>> = HashMap()
+
+    fun findPackageId(name: String, version: String): Long? {
+        return packages.find { it.name == name && it.version == version }?.id
+    }
+
+    fun findPackageId(name: String, version: Provider<String>): Long? = findPackageId(name, version.get())
+
+    fun getPackageFiles(name: String, version: String): List<GitLabAPI.PackageFile> {
+        return packageFiles.getOrPut("$name-$version") {
+            val id = findPackageId(name, version) ?: return emptyList()
+            fetch("$endpoint/$id/package_files?pagination=keyset&per_page=$PACKAGE_FILE_COUNT&order_by=created_at&sort=asc")
+                ?: emptyList()
+        }
+    }
+
+    fun getPackageFiles(name: String, version: Provider<String>): List<GitLabAPI.PackageFile> =
+        getPackageFiles(name, version.get())
+
     /**
      * Gets a package by its path.
      *
@@ -173,7 +198,7 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
      * @return A GitLabPackage instance representing the specified package
      */
     operator fun get(path: String): GitLabPackage {
-        return GitLabPackage(this, "$endpoint/$path")
+        return GitLabPackage(this, "$endpoint/$path", path, "")
     }
 
     /**
@@ -184,7 +209,7 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
      * @return A GitLabPackage instance representing the specified package version
      */
     operator fun get(path: String, version: String): GitLabPackage {
-        return GitLabPackage(this, "$endpoint/$path/$version")
+        return GitLabPackage(this, "$endpoint/$path/$version", path, version)
     }
 
     /**
@@ -194,8 +219,9 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
      * @param version A provider for the version of the package
      * @return A GitLabPackage instance representing the specified package version
      */
-    operator fun get(path: String, version: Provider<in String>): GitLabPackage {
-        return GitLabPackage(this, "$endpoint/$path/${version.get()}")
+    operator fun get(path: String, version: Provider<String>): GitLabPackage {
+        val versionString = version.get()
+        return GitLabPackage(this, "$endpoint/$path/${versionString}", path, versionString)
     }
 }
 
@@ -233,7 +259,9 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
  */
 class GitLabPackage internal constructor( // @formatter:off
     val packageRegistry: GitLabPackageRegistry,
-    val url: String
+    val url: String,
+    val path: String,
+    val version: String
 ) { // @formatter:on
     /**
      * Gets an artifact by its file name, suffix, and directory name.
@@ -319,12 +347,29 @@ class GitLabPackageArtifact internal constructor(
                 val url = "$packageUrl/$fileName"
                 project.logger.lifecycle("Downloading $url..")
                 localPath.createDirectories()
-                fetchRaw(url)?.use {
-                    Files.copy(it, localPath, StandardCopyOption.REPLACE_EXISTING)
-                }
+                fetchRaw(url)?.use { Files.copy(it, localPath, StandardCopyOption.REPLACE_EXISTING) }
                 project.logger.lifecycle("Downloaded $localPath")
             }
-            onlyIf { !project.isOffline && !localPath.exists() }
+            onlyIf {
+                if (project.isOffline) {
+                    project.logger.lifecycle("Skipping download in offline mode")
+                    return@onlyIf false
+                }
+                val path = packageInstance.path
+                val name = if (path.startsWith("generic/")) path.substringAfter("generic/") else path
+                val packageFiles = packageInstance.packageRegistry.getPackageFiles(name, packageInstance.version)
+                val packageFile = packageFiles.find { it.fileName == fileName }
+                val hashDigest = packageFile?.hashType?.createDigest()
+                val remoteHash = packageFile?.hash
+                val localHash = if (localPath.exists() && hashDigest != null) {
+                    hashDigest.digest(localPath.readBytes()).joinToString("") { "%02x".format(it) }
+                }
+                else null
+                val result = !(remoteHash == null || localHash == null || remoteHash == localHash)
+                if (result) project.logger.lifecycle("Hash sum doesn't match ($remoteHash)")
+                else project.logger.lifecycle("Hash sum matches ($remoteHash)")
+                result
+            }
         }
 
     /**

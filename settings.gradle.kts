@@ -24,10 +24,12 @@ pluginManagement {
     }
 }
 
+@Suppress("UnstableApiUsage")
 dependencyResolutionManagement {
-    @Suppress("UnstableApiUsage") repositories {
+    repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
