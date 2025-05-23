@@ -29,7 +29,7 @@ plugins {
     signing
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.gradle.nexus)
+    alias(libs.plugins.gradleNexus)
 }
 
 group = "dev.karmakrafts.conventions"
@@ -85,6 +85,7 @@ dependencies {
     compileOnly(libs.plugins.kotlinx.kover.asLibrary())
     compileOnly(libs.plugins.android.library.asLibrary())
     compileOnly(libs.plugins.android.application.asLibrary())
+    compileOnly(libs.plugins.gradleNexus.asLibrary())
 }
 
 gradlePlugin {
@@ -148,7 +149,7 @@ publishing {
         pom {
             name = project.name
             description = "Karma Krafts conventions and utilities plugin for Gradle"
-            url = System.getenv("CI_PROJECT_URL")
+            url = "https://git.karmakrafts.dev/kk/karma-conventions"
             licenses {
                 license {
                     name = "Apache License 2.0"
@@ -175,11 +176,11 @@ publishing {
             }
             issueManagement {
                 system = "GitLab"
-                url = "${System.getenv("CI_PROJECT_URL")}/-/issues"
+                url = "${this@pom.url}/-/issues"
             }
             ciManagement {
                 system = "GitLab"
-                url = "${System.getenv("CI_PROJECT_URL")}/-/pipelines"
+                url = "${this@pom.url}/-/pipelines"
             }
         }
     }
