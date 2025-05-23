@@ -21,7 +21,7 @@ This plugin provides many utilities, including but no limited to:
 
 ### How to use it
 
-First, add the official Karma Krafts maven repository to your `settings.gradle.kts`:
+First, add the official Maven Central repository to your `settings.gradle.kts`:
 
 ```kotlin
 pluginManagement {

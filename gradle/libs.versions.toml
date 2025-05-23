@@ -1,10 +1,10 @@
 [versions]
 java = "17"
-karma-conventions = "1.3.9"
-kotlin = "2.1.20" # https://github.com/JetBrains/kotlin/releases
+karma-conventions = "1.3.10"
+kotlin = "2.1.21" # https://github.com/JetBrains/kotlin/releases
 kotlinx-kover = "0.9.1" # https://github.com/Kotlin/kotlinx-kover/releases
-kotlinx-serialization = "1.8.0" # https://github.com/Kotlin/kotlinx.serialization/releases
-android-gradle = "8.9.1" # https://developer.android.com/reference/tools/gradle-api
+kotlinx-serialization = "1.8.1" # https://github.com/Kotlin/kotlinx.serialization/releases
+android-gradle = "8.9.3" # https://developer.android.com/reference/tools/gradle-api
 gradle-nexus = "2.0.0" # https://github.com/gradle-nexus/publish-plugin/releases
 dokka = "2.0.0" # https://github.com/Kotlin/dokka/releases
 
@@ -15,8 +15,8 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kotlinx-kover" }
-kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinx-serialization" }
 android-library = { id = "com.android.library", version.ref = "android-gradle" }
 android-application = { id = "com.android.application", version.ref = "android-gradle" }
 gradle-nexus = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "gradle-nexus" }
