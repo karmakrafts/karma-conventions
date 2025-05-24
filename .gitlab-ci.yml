@@ -96,4 +96,3 @@ publish-central:
     - ./gradlew publishPluginMavenPublicationToSonatypeRepository closeAndReleaseStagingRepositories
   tags:
     - macos
-  allow_failure: true
