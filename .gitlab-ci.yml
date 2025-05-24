@@ -83,7 +83,7 @@ publish-gitlab:
     - *if-main
     - *if-release
   script:
-    - ./gradlew publishLibraryPublicationToGitLabRepository
+    - ./gradlew publishPluginMavenPublicationToGitLabRepository
   tags:
     - macos
 
@@ -93,7 +93,7 @@ publish-central:
     - *if-main
     - *if-release
   script:
-    - ./gradlew publishLibraryPublicationToSonatypeRepository closeAndReleaseStagingRepositories
+    - ./gradlew publishPluginMavenPublicationToSonatypeRepository closeAndReleaseStagingRepositories
   tags:
     - macos
   allow_failure: true
