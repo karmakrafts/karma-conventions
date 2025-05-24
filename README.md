@@ -18,6 +18,9 @@ This plugin provides many utilities, including but no limited to:
 * Coverage
 * Publishing defaults & extensions
 * Signing
+* Network connectivity
+* Kotlin target extensions
+* Kotlin CInterop extensions
 
 ### How to use it
 
@@ -43,6 +46,6 @@ Then add a dependency on the plugin in your root buildscript:
 
 ```kotlin
 plugins {
-    id("dev.karmakrafts.conventions") version "<version>"
+    id("dev.karmakrafts.conventions.karma-conventions") version "<version>"
 }
 ```
