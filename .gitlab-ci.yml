@@ -83,7 +83,7 @@ publish-gitlab:
     - *if-main
     - *if-release
   script:
-    - ./gradlew publishToGitLab
+    - ./gradlew publishAllPublicationsToGitLabRepository
   tags:
     - macos
 
