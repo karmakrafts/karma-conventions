@@ -67,9 +67,17 @@ tasks {
     val sourcesJar by getting {
         dependsOn(compileJava)
     }
-    named<Jar>("javadocJar") {
+    val javadocJar = named<Jar>("javadocJar") {
         dependsOn(dokkaGeneratePublicationHtml)
         from(dokkaGeneratePublicationHtml)
+    }
+    System.getProperty("publishDocs.root")?.let { docsDir ->
+        register("publishDocs", Copy::class) {
+            dependsOn(javadocJar)
+            mustRunAfter(javadocJar)
+            from(zipTree(javadocJar.get().outputs.files.first()))
+            into(docsDir)
+        }
     }
 }
 
@@ -186,7 +194,8 @@ publishing {
     }
 }
 
-@OptIn(ExperimentalEncodingApi::class) signing {
+@OptIn(ExperimentalEncodingApi::class)
+signing {
     System.getenv("SIGNING_KEY_ID")?.let { keyId ->
         useInMemoryPgpKeys( // @formatter:off
             keyId,
