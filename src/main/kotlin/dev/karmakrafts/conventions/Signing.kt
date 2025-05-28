@@ -53,6 +53,8 @@ fun SigningExtension.signPublications() {
             },
             System.getenv("SIGNING_PASSWORD")
         ) // @formatter:on
+    }
+    project.afterEvaluate {
         sign(project.extensions.getByType<PublishingExtension>().publications)
     }
 }
