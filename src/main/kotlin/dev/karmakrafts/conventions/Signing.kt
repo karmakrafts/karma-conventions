@@ -17,7 +17,10 @@
 package dev.karmakrafts.conventions
 
 import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.tasks.AbstractPublishToMaven
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.withType
+import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -56,5 +59,11 @@ fun SigningExtension.signPublications() {
     }
     project.afterEvaluate {
         sign(project.extensions.getByType<PublishingExtension>().publications)
+        // Workaround for https://github.com/gradle/gradle/issues/26091
+        project.tasks.apply {
+            withType<AbstractPublishToMaven>().forEach { task ->
+                task.mustRunAfter(withType<Sign>())
+            }
+        }
     }
 }
