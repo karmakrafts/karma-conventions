@@ -61,7 +61,7 @@ security:
     - trivy repo ./ --exit-code 0 --format template --template "@/contrib/gitlab.tpl" --output report.json
     - trivy repo ./ --exit-code 1 --severity CRITICAL
   tags:
-    - linux
+    - macos
 
 # ------------------------------ Build
 
