@@ -365,7 +365,7 @@ class GitLabPackageArtifact internal constructor(
                     hashDigest.digest(localPath.readBytes()).joinToString("") { "%02x".format(it) }
                 }
                 else null
-                val result = !(remoteHash == null || localHash == null || remoteHash == localHash)
+                val result = remoteHash != localHash
                 if (result) project.logger.lifecycle("Hash sum doesn't match ($remoteHash)")
                 else project.logger.lifecycle("Hash sum matches ($remoteHash)")
                 result
