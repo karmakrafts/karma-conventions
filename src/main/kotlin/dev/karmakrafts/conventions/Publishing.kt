@@ -211,19 +211,20 @@ fun PublishingExtension.gplV3License() {
  * Example usage:
  * ```kotlin
  * publishing {
- *     setRepository("github.com/organization/repository")
+ *     setRepository("github.com", "organization/repository")
  * }
  * ```
  *
- * @param address The repository address (without protocol prefix)
+ * @param server The repository server (without protocol prefix)
+ * @param repository The repository path (without the .git extension)
  */
-fun PublishingExtension.setRepository(address: String) {
+fun PublishingExtension.setRepository(server: String, repository: String) {
     publications.withType<MavenPublication>().configureEach {
         pom {
             scm {
-                url.set("https://$address")
-                connection.set("scm:git:git://$address")
-                developerConnection.set("scm:git:git://$address")
+                url.set("https://$server/$repository")
+                connection.set("scm:git:https://$server/$repository")
+                developerConnection.set("scm:git:ssh://git@$server:$repository")
             }
         }
     }
