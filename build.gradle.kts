@@ -179,8 +179,8 @@ publishing {
             }
             scm {
                 url = "https://github.com/karmakrafts/karma-conventions"
-                connection = "scm:git:git://github.com/karmakrafts/karma-conventions.git"
-                developerConnection = "scm:git:git://github.com/karmakrafts/karma-conventions.git"
+                connection = "scm:git:https://github.com/karmakrafts/karma-conventions.git"
+                developerConnection = "scm:git:ssh://git@github.com/karmakrafts/karma-conventions.git"
             }
             issueManagement {
                 system = "GitLab"
