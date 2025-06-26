@@ -42,6 +42,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.security.MessageDigest
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
@@ -172,7 +173,7 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
     }
 
     val packages: List<GitLabAPI.Package> by lazy { fetch(endpoint) ?: emptyList() }
-    private val packageFiles: HashMap<String, List<GitLabAPI.PackageFile>> = HashMap()
+    private val packageFiles: ConcurrentHashMap<String, List<GitLabAPI.PackageFile>> = ConcurrentHashMap()
 
     fun findPackageId(name: String, version: String): Long? {
         return packages.find { it.name == name && it.version == version }?.id
@@ -263,6 +264,8 @@ class GitLabPackage internal constructor( // @formatter:off
     val path: String,
     val version: String
 ) { // @formatter:on
+    private val artifacts: ConcurrentHashMap<String, GitLabPackageArtifact> = ConcurrentHashMap()
+
     /**
      * Gets an artifact by its file name, suffix, and directory name.
      *
@@ -273,8 +276,8 @@ class GitLabPackage internal constructor( // @formatter:off
      */
     operator fun get(
         fileName: String, suffix: String = "", directoryName: String = packageRegistry.project.name
-    ): GitLabPackageArtifact {
-        return GitLabPackageArtifact(this, url, fileName, suffix, directoryName)
+    ): GitLabPackageArtifact = artifacts.getOrPut("$suffix:$directoryName/$fileName") {
+        GitLabPackageArtifact(this, url, fileName, suffix, directoryName)
     }
 
     /**
@@ -287,8 +290,8 @@ class GitLabPackage internal constructor( // @formatter:off
      */
     operator fun get(
         fileName: Provider<String>, suffix: String = "", directoryName: String = packageRegistry.project.name
-    ): GitLabPackageArtifact {
-        return GitLabPackageArtifact(this, url, fileName.get(), suffix, directoryName)
+    ): GitLabPackageArtifact = artifacts.getOrPut("$suffix:$directoryName/${fileName.get()}") {
+        GitLabPackageArtifact(this, url, fileName.get(), suffix, directoryName)
     }
 }
 
