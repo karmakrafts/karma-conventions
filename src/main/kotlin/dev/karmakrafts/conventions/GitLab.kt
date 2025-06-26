@@ -346,6 +346,7 @@ class GitLabPackageArtifact internal constructor(
             doLast {
                 val url = "$packageUrl/$fileName"
                 project.logger.lifecycle("Downloading $url..")
+                localPath.deleteIfExists()
                 localPath.createDirectories()
                 fetchRaw(url)?.use { Files.copy(it, localPath, StandardCopyOption.REPLACE_EXISTING) }
                 project.logger.lifecycle("Downloaded $localPath")
