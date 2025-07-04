@@ -1,6 +1,6 @@
 [versions]
 java = "17"
-karma-conventions = "1.5.4"
+karma-conventions = "1.5.5"
 kotlin = "2.2.0" # https://github.com/JetBrains/kotlin/releases
 kotlinx-kover = "0.9.1" # https://github.com/Kotlin/kotlinx-kover/releases
 kotlinx-serialization = "1.8.1" # https://github.com/Kotlin/kotlinx.serialization/releases
