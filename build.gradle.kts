@@ -69,6 +69,7 @@ tasks {
     compileKotlin { dependsOn(processResources) }
     val sourcesJar by getting {
         dependsOn(compileJava)
+        dependsOn(compileTestJava)
     }
     val javadocJar = named<Jar>("javadocJar") {
         dependsOn(dokkaGeneratePublicationHtml)
