@@ -43,7 +43,7 @@ private const val ANDROID_APP_PLUGIN_ID: String = "com.android.application"
  * @throws IllegalArgumentException if the integer does not correspond to a valid Java version
  */
 fun Int.toJavaVersion(): JavaVersion {
-    return requireNotNull(JavaVersion.values().find {
+    return requireNotNull(JavaVersion.entries.find {
         it.majorVersion.toIntOrNull() == this@toJavaVersion
     }) { "Invalid Java major version: $this" }
 }

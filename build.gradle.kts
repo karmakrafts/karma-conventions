@@ -53,14 +53,17 @@ java {
 }
 
 tasks {
-    val createVersionFile by registering {
+    val versionString = rootProject.version.toString()
+    val buildDirPath = layout.buildDirectory.asFile.get().toPath()
+    val createVersionFile by registering(DefaultTask::class) {
+        val path = (buildDirPath / "generated" / "karma-conventions.version")
+        outputs.file(path)
+        outputs.upToDateWhen { false } // Always re-generate this file
         doFirst {
-            val path = (layout.buildDirectory.asFile.get().toPath() / "generated" / "karma-conventions.version")
             path.deleteIfExists()
             path.parent.createDirectories()
-            path.writeText(rootProject.version.toString())
+            path.writeText(versionString)
         }
-        outputs.upToDateWhen { false } // Always re-generate this file
     }
     processResources { dependsOn(createVersionFile) }
     compileKotlin { dependsOn(processResources) }
