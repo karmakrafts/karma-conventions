@@ -24,12 +24,13 @@ import kotlin.io.path.div
 import kotlin.io.path.writeText
 
 plugins {
-    `kotlin-dsl`
-    `maven-publish`
-    signing
+    alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.gradleNexus)
+    `kotlin-dsl`
+    `maven-publish`
+    signing
 }
 
 group = "dev.karmakrafts.conventions"
