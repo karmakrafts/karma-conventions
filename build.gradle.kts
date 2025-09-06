@@ -91,8 +91,8 @@ fun Provider<PluginDependency>.asLibrary(): Provider<String> {
 }
 
 dependencies {
-    implementation(libs.kotlinx.serialization.core)
-    implementation(libs.kotlinx.serialization.json)
+    api(libs.kotlinx.serialization.core)
+    api(libs.kotlinx.serialization.json)
     compileOnly(libs.plugins.kotlin.multiplatform.asLibrary())
     compileOnly(libs.plugins.kotlin.jvm.asLibrary())
     compileOnly(libs.plugins.kotlinx.kover.asLibrary())
