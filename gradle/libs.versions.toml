@@ -2,9 +2,9 @@
 
 java = "17"
 
-karma-conventions = "1.7.0"
+karma-conventions = "1.7.1"
 kotlin = "2.2.20" # https://github.com/JetBrains/kotlin/releases
-kotlinx-kover = "0.9.1" # https://github.com/Kotlin/kotlinx-kover/releases
+kotlinx-kover = "0.9.2" # https://github.com/Kotlin/kotlinx-kover/releases
 kotlinx-serialization = "1.9.0" # https://github.com/Kotlin/kotlinx.serialization/releases
 android-gradle = "8.13.0" # https://developer.android.com/reference/tools/gradle-api
 gradleNexus = "2.0.0" # https://github.com/gradle-nexus/publish-plugin/releases
