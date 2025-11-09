@@ -55,15 +55,14 @@ java {
 
 tasks {
     val versionString = rootProject.version.toString()
-    val buildDirPath = layout.buildDirectory.asFile.get().toPath()
     val createVersionFile by registering(DefaultTask::class) {
-        val path = (buildDirPath / "generated" / "karma-conventions.version")
-        outputs.file(path)
+        outputs.file(layout.buildDirectory.asFile.map { file -> (file.toPath() / "generated" / "karma-conventions.version").toFile() })
         outputs.upToDateWhen { false } // Always re-generate this file
         doFirst {
-            path.deleteIfExists()
-            path.parent.createDirectories()
-            path.writeText(versionString)
+            val outputPath = outputs.files.first().toPath()
+            outputPath.deleteIfExists()
+            outputPath.parent.createDirectories()
+            outputPath.writeText(versionString)
         }
     }
     processResources { dependsOn(createVersionFile) }
@@ -72,7 +71,7 @@ tasks {
         dependsOn(compileJava)
         dependsOn(compileTestJava)
     }
-    val javadocJar = named<Jar>("javadocJar") {
+    val javadocJar by getting(Jar::class) {
         dependsOn(dokkaGeneratePublicationHtml)
         from(dokkaGeneratePublicationHtml)
     }
@@ -80,7 +79,7 @@ tasks {
         register("publishDocs", Copy::class) {
             dependsOn(javadocJar)
             mustRunAfter(javadocJar)
-            from(zipTree(javadocJar.get().outputs.files.first()))
+            from(zipTree(javadocJar.outputs.files.first()))
             into(docsDir)
         }
     }
@@ -199,8 +198,7 @@ publishing {
     }
 }
 
-@OptIn(ExperimentalEncodingApi::class)
-signing {
+@OptIn(ExperimentalEncodingApi::class) signing {
     System.getenv("SIGNING_KEY_ID")?.let { keyId ->
         useInMemoryPgpKeys( // @formatter:off
             keyId,
