@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 (C) Karma Krafts & associates
+ * Copyright 2025 Karma Krafts
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ tasks {
     }
     processResources { dependsOn(createVersionFile) }
     compileKotlin { dependsOn(processResources) }
+    @Suppress("UNUSED")
     val sourcesJar by getting {
         dependsOn(compileJava)
         dependsOn(compileTestJava)
@@ -115,6 +116,7 @@ System.getenv("CI_PROJECT_ID")?.let {
         lockAllConfigurations()
     }
     tasks {
+        @Suppress("UNUSED")
         val dependenciesForAll by registering(DependencyReportTask::class)
     }
 }
@@ -123,7 +125,7 @@ dokka {
     moduleName = project.name
     pluginsConfiguration {
         html {
-            footerMessage = "(c) ${ZonedDateTime.now().year} Karma Krafts & associates"
+            footerMessage = "&copy; ${ZonedDateTime.now().year} Karma Krafts"
         }
     }
 }
