@@ -129,7 +129,7 @@ dokka {
     moduleName = project.name
     pluginsConfiguration {
         html {
-            homepageLink = "https://git.karmakrafts.dev/kk/karma-conventions"
+            homepageLink = "https://docs.karmakrafts.dev"
             footerMessage = "&copy; ${ZonedDateTime.now().year} Karma Krafts"
         }
     }
