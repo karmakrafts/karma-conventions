@@ -40,6 +40,9 @@ version = System.getenv("CI_COMMIT_TAG")?.let { baseVersion.get() }
     ?: "${baseVersion.get()}.${System.getenv("CI_PIPELINE_IID") ?: 0}-SNAPSHOT"
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexplicit-backing-fields")
+    }
     jvmToolchain(libs.versions.java.get().toInt())
     sourceSets {
         main {

@@ -2,8 +2,8 @@
 
 java = "17"
 
-karma-conventions = "1.8.2"
-kotlin = "2.2.21" # https://github.com/JetBrains/kotlin/releases
+karma-conventions = "1.9.0"
+kotlin = "2.3.0" # https://github.com/JetBrains/kotlin/releases
 kotlinx-kover = "0.9.4" # https://github.com/Kotlin/kotlinx-kover/releases
 kotlinx-serialization = "1.9.0" # https://github.com/Kotlin/kotlinx.serialization/releases
 android-gradle = "8.12.3" # https://developer.android.com/reference/tools/gradle-api
