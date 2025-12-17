@@ -102,6 +102,7 @@ dependencies {
     compileOnly(libs.plugins.android.library.asLibrary())
     compileOnly(libs.plugins.android.application.asLibrary())
     compileOnly(libs.plugins.gradleNexus.asLibrary())
+    compileOnly(libs.plugins.dokka.asLibrary())
 }
 
 gradlePlugin {
@@ -128,6 +129,7 @@ dokka {
     moduleName = project.name
     pluginsConfiguration {
         html {
+            homepageLink = "https://git.karmakrafts.dev/kk/karma-conventions"
             footerMessage = "&copy; ${ZonedDateTime.now().year} Karma Krafts"
         }
     }
