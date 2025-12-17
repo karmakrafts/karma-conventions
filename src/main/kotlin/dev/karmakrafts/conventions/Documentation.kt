@@ -30,7 +30,7 @@ import org.jetbrains.dokka.gradle.tasks.DokkaGenerateTask
 import java.time.ZonedDateTime
 
 fun Project.defaultDokkaConfig( // @formatter:off
-    homepageLink: String? = null,
+    homepageLink: String? = "https://docs.karmakrafts.dev",
     copyright: String = "&copy; ${ZonedDateTime.now().year} Karma Krafts",
     publishDocs: Boolean = true
 ) { // @formatter:on
