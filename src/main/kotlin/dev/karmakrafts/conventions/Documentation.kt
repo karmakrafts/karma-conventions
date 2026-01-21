@@ -43,26 +43,32 @@ fun Project.defaultDokkaConfig( // @formatter:off
             footerMessage.set(copyright)
         }
     }
+    // Configure publishing task when enabled and root directory is provided
     // Set up a dokkaJar task
-    val dokkaJar = tasks.register("dokkaJar", Jar::class) { // @formatter:off
+    val dokkaHtmlJar = tasks.register("dokkaHtmlJar", Jar::class) { // @formatter:off
         group = "dokka"
+        archiveClassifier.set("javadoc")
         from(tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
             .flatMap { task -> task.outputDirectory })
-        archiveClassifier.set("javadoc")
     } // @formatter:on
-    // Configure publishing task when enabled and root directory is provided
     if (publishDocs) System.getProperty("publishDocs.root")?.let { docsDir ->
         tasks.register("publishDocs", Copy::class) {
-            dependsOn(dokkaJar)
-            mustRunAfter(dokkaJar)
-            from(zipTree(dokkaJar.map { task -> task.outputs.files.first() }))
+            dependsOn(dokkaHtmlJar)
+            mustRunAfter(dokkaHtmlJar)
+            from(zipTree(dokkaHtmlJar.map { task -> task.outputs.files.first() }))
             into("$docsDir/${project.name}")
         }
     }
     // Attach generated JAR to all maven publications of this project if plugin is present
     if (pluginManager.hasPlugin("maven-publish")) extensions.getByType<PublishingExtension>().apply {
         publications.withType<MavenPublication> {
-            artifact(dokkaJar)
+            artifact(tasks.register("${name}DokkaJar", Jar::class) {
+                group = "dokka"
+                archiveClassifier.set("javadoc")
+                from(
+                    tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
+                        .flatMap { task -> task.outputDirectory })
+            })
         }
     }
 }
