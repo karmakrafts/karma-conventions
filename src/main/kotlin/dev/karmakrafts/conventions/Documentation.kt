@@ -48,8 +48,10 @@ fun Project.defaultDokkaConfig( // @formatter:off
     val dokkaHtmlJar = tasks.register("dokkaHtmlJar", Jar::class) { // @formatter:off
         group = "dokka"
         archiveClassifier.set("javadoc")
+        // @formatter:off
         from(tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
             .flatMap { task -> task.outputDirectory })
+        // @formatter:on
     } // @formatter:on
     if (publishDocs) System.getProperty("publishDocs.root")?.let { docsDir ->
         tasks.register("publishDocs", Copy::class) {
@@ -61,14 +63,20 @@ fun Project.defaultDokkaConfig( // @formatter:off
     }
     // Attach generated JAR to all maven publications of this project if plugin is present
     if (pluginManager.hasPlugin("maven-publish")) extensions.getByType<PublishingExtension>().apply {
-        publications.withType<MavenPublication> {
-            artifact(tasks.register("${name}DokkaJar", Jar::class) {
+        publications.withType<MavenPublication> publication@{
+            val dokkaJar = tasks.register("${name}DokkaJar", Jar::class) {
                 group = "dokka"
                 archiveClassifier.set("javadoc")
-                from(
-                    tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
-                        .flatMap { task -> task.outputDirectory })
-            })
+                // Each archive name should be distinct, to avoid implicit dependency issues.
+                // We use the same format as the sources Jar tasks.
+                // https://youtrack.jetbrains.com/issue/KT-46466
+                archiveBaseName.set("${archiveBaseName.get()}-${this@publication.name}")
+                // @formatter:off
+                from(tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
+                    .flatMap { task -> task.outputDirectory })
+                // @formatter:on
+            }
+            artifact(dokkaJar)
         }
     }
 }
