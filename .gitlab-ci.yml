@@ -39,7 +39,7 @@ variables:
 
 # ------------------------------ Changelog
 
-changelog:check:
+check_changelog:
   stage: check_changelog
   interruptible: true
   rules:
@@ -56,7 +56,7 @@ changelog:check:
   tags:
     - macos
 
-changelog:update:
+update_changelog:
   stage: update_changelog
   interruptible: false
   rules:
@@ -120,7 +120,7 @@ build:
 
 # ------------------------------ Publish
 
-publish-gitlab:
+publish:gitlab:
   stage: publish
   rules:
     - *if-main
@@ -130,7 +130,7 @@ publish-gitlab:
   tags:
     - macos
 
-publish-central:
+publish:central:
   stage: publish
   rules:
     - *if-main
@@ -140,7 +140,7 @@ publish-central:
   tags:
     - macos
 
-publish-documentation:
+publish:documentation:
   stage: publish
   rules:
     - *if-release
@@ -151,7 +151,7 @@ publish-documentation:
 
 # ------------------------------ Release
 
-create-release:
+release:gitlab:
   stage: release
   rules:
     - *if-release
@@ -162,8 +162,7 @@ create-release:
         found && $0 ~ "^## \\[" { exit }
         found { print }
       ' "CHANGELOG.md" > release_notes.md
-      echo "Extracted release notes:"
-      echo "$(cat release_notes.md)"
+      echo "Extracted release notes"
   release:
     tag_name: "$CI_COMMIT_TAG"
     name: "$CI_COMMIT_TAG"
@@ -176,5 +175,39 @@ create-release:
         - name: "Changelog"
           url: "$CI_PROJECT_URL/-/blob/$CI_COMMIT_TAG/CHANGELOG.md"
           link_type: "other"
+  tags:
+    - macos
+
+release:github:
+  stage: release
+  rules:
+    - *if-release
+  variables:
+    GITHUB_API: "https://api.github.com"
+    GITHUB_REPO: "karmakrafts/karma-conventions"
+  script:
+    - |
+      awk '
+      $0 == "## [Unreleased]" { found=1; next }
+      found && $0 ~ "^## \\[" { exit }
+      found { print }
+      ' "CHANGELOG.md" > release_notes.md
+      echo "Extracted release notes"
+      HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$GITHUB_API/repos/$GITHUB_REPO/releases" \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github+json" \
+        -d '{
+              "tag_name": "'"$CI_COMMIT_TAG"'",
+              "name": "'"$CI_COMMIT_TAG"'",
+              "body": "'"$(cat release_notes.md)"'",
+              "draft": false,
+              "prerelease": false
+            }')
+      if [ "$HTTP_STATUS" -eq 201 ]; then 
+          echo "✅ GitHub release created successfully!"
+      else 
+          echo "❌ Failed to create GitHub release (HTTP $HTTP_STATUS)"
+          exit 1
+      fi
   tags:
     - macos

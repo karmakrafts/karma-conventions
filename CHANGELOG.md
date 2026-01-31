@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- Mirror releases to GitHub
+
 ## [1.10.6]
 
 ### Added
