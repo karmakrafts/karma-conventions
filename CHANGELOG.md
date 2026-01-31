@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- Added Documentation and Changelog links to releases
+
 ## [1.10.5]
 
 ### Fixed

@@ -168,5 +168,13 @@ create-release:
     tag_name: "$CI_COMMIT_TAG"
     name: "$CI_COMMIT_TAG"
     description: "$(cat release_notes.md)"
+    assets:
+      links:
+        - name: "Documentation"
+          url: "https://docs.karmakrafts.dev/karma-conventions"
+          link_type: "other"
+        - name: "Changelog"
+          url: "$CI_PROJECT_URL/-/blob/$CI_COMMIT_TAG/CHANGELOG.md"
+          link_type: "other"
   tags:
     - macos
