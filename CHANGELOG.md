@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- Add links to GitHub releases
+
 ## [1.10.13]
 
 ## [1.10.12]
