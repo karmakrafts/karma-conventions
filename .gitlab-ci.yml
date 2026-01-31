@@ -12,7 +12,6 @@ stages:
   - security
   - publish
   - release
-  - update_changelog
 
 variables:
   GRADLE_OPTS: -Dorg.gradle.daemon=false
@@ -51,25 +50,6 @@ changelog:check:
         exit 1
       fi
       echo "✅ CHANGELOG.md was updated"
-  tags:
-    - macos
-
-changelog:update:
-  stage: update_changelog
-  interruptible: false
-  rules:
-    - *if-release
-  script:
-    - |
-      echo "Updating CHANGELOG.md for next release"
-      sed -i '' "s/## \[Unreleased\]/## [Unreleased]\
-      \
-      ## \[$CI_COMMIT_TAG\]/" CHANGELOG.md
-      git config user.name "GitLab CI"
-      git config user.email "ci@gitlab"
-      git add CHANGELOG.md
-      git commit -m "Update changelog for next release"
-      git push origin HEAD:$CI_DEFAULT_BRANCH
   tags:
     - macos
 
