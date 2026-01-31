@@ -14,25 +14,12 @@
  * limitations under the License.
  */
 
-rootProject.name = "karma-conventions"
+package dev.karmakrafts.conventions
 
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-
-@Suppress("UnstableApiUsage")
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-
-plugins {
-    id("org.gradle.toolchains.foojay-resolver") version "1.0.0"
+object PluginIds {
+    const val JAVA: String = "java"
+    const val KOTLIN_JVM: String = "org.jetbrains.kotlin.jvm"
+    const val KOTLIN_MP: String = "org.jetbrains.kotlin.multiplatform"
+    const val ANDROID_APP: String = "com.android.application"
+    const val ANDROID_LIB: String = "com.android.kotlin.multiplatform.library"
 }

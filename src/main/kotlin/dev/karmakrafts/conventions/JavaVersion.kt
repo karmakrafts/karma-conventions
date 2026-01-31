@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Karma Krafts
+ * Copyright 2026 Karma Krafts
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package dev.karmakrafts.conventions
 
 import com.android.build.api.dsl.ApplicationExtension
-import com.android.build.gradle.LibraryExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
@@ -26,12 +25,6 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-
-private const val JAVA_PLUGIN_ID: String = "java"
-private const val KOTLIN_JVM_PLUGIN_ID: String = "org.jetbrains.kotlin.jvm"
-private const val KOTLIN_MP_PLUGIN_ID: String = "org.jetbrains.kotlin.multiplatform"
-private const val ANDROID_LIB_PLUGIN_ID: String = "com.android.library"
-private const val ANDROID_APP_PLUGIN_ID: String = "com.android.application"
 
 /**
  * Converts an integer Java version number to a JavaVersion enum value.
@@ -62,7 +55,7 @@ fun Int.toJavaVersion(): JavaVersion {
  */
 fun Project.configureJava(version: Int) {
     project.pluginManager.apply {
-        if (hasPlugin(JAVA_PLUGIN_ID)) withPlugin(JAVA_PLUGIN_ID) {
+        if (hasPlugin(PluginIds.JAVA)) withPlugin(PluginIds.JAVA) {
             extensions.getByType<JavaPluginExtension>().apply {
                 toolchain {
                     languageVersion.set(JavaLanguageVersion.of(version))
@@ -72,27 +65,19 @@ fun Project.configureJava(version: Int) {
                 targetCompatibility = javaVersion
             }
         }
-        if (hasPlugin(KOTLIN_JVM_PLUGIN_ID)) withPlugin(KOTLIN_JVM_PLUGIN_ID) {
+        if (hasPlugin(PluginIds.KOTLIN_JVM)) withPlugin(PluginIds.KOTLIN_JVM) {
             logger.info("Found Kotlin JVM plugin, adjusting Java version")
             extensions.getByType(KotlinJvmExtension::class).apply {
                 jvmToolchain(version)
             }
         }
-        if (hasPlugin(KOTLIN_MP_PLUGIN_ID)) withPlugin(KOTLIN_MP_PLUGIN_ID) {
+        if (hasPlugin(PluginIds.KOTLIN_MP)) withPlugin(PluginIds.KOTLIN_MP) {
             logger.info("Found Kotlin Multiplatform plugin, adjusting Java version")
             extensions.getByType<KotlinMultiplatformExtension>().apply {
                 jvmToolchain(version)
             }
         }
-        if (hasPlugin(ANDROID_LIB_PLUGIN_ID)) withPlugin(ANDROID_LIB_PLUGIN_ID) {
-            logger.info("Found Android Library plugin, adjusting Java version")
-            extensions.getByType<LibraryExtension>().compileOptions {
-                val javaVersion = version.toJavaVersion()
-                sourceCompatibility = javaVersion
-                targetCompatibility = javaVersion
-            }
-        }
-        if (hasPlugin(ANDROID_APP_PLUGIN_ID)) withPlugin(ANDROID_APP_PLUGIN_ID) {
+        if (hasPlugin(PluginIds.ANDROID_APP)) withPlugin(PluginIds.ANDROID_APP) {
             logger.info("Found Android Application plugin, adjusting Java version")
             extensions.getByType<ApplicationExtension>().compileOptions {
                 val javaVersion = version.toJavaVersion()
