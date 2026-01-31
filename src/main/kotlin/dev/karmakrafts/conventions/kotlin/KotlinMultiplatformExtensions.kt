@@ -53,7 +53,7 @@ fun KotlinNativeTarget.defaultMacosTarget() {
 }
 
 /**
- * Adds macOS targets (x64 and Arm64) to the multiplatform project.
+ * Adds macOS targets to the multiplatform project.
  *
  * @param config The configuration to apply to each macOS target.
  */
@@ -73,7 +73,7 @@ fun KotlinNativeTarget.defaultIosTarget() {
 }
 
 /**
- * Adds iOS targets (Arm64, x64, and Simulator Arm64) to the multiplatform project.
+ * Adds iOS targets (Arm64, and Simulator Arm64) to the multiplatform project.
  *
  * @param config The configuration to apply to each iOS target.
  */
@@ -84,6 +84,44 @@ inline fun KotlinMultiplatformExtension.withIos(crossinline config: KotlinNative
         config()
     }
     iosSimulatorArm64 {
+        defaultIosTarget()
+        config()
+    }
+}
+
+/**
+ * Adds tvOS targets (Arm64, and Simulator Arm64) to the multiplatform project.
+ *
+ * @param config The configuration to apply to each tvOS target.
+ */
+@KotlinGradlePluginDsl
+inline fun KotlinMultiplatformExtension.withTvos(crossinline config: KotlinNativeTarget.() -> Unit = {}) {
+    tvosArm64 {
+        defaultIosTarget()
+        config()
+    }
+    tvosSimulatorArm64 {
+        defaultIosTarget()
+        config()
+    }
+}
+
+/**
+ * Adds watchOS targets (Arm32, Arm64, and Simulator Arm64) to the multiplatform project.
+ *
+ * @param config The configuration to apply to each watchOS target.
+ */
+@KotlinGradlePluginDsl
+inline fun KotlinMultiplatformExtension.withWatchos(crossinline config: KotlinNativeTarget.() -> Unit = {}) {
+    watchosArm32 {
+        defaultIosTarget()
+        config()
+    }
+    watchosArm64 {
+        defaultIosTarget()
+        config()
+    }
+    watchosSimulatorArm64 {
         defaultIosTarget()
         config()
     }
@@ -166,7 +204,7 @@ inline fun KotlinMultiplatformExtension.withMingw(crossinline config: KotlinNati
 }
 
 /**
- * Adds all common native targets (Android Native, Linux, macOS, iOS, and MinGW) to the multiplatform project.
+ * Adds all common native targets (Android Native, Linux, macOS, iOS, tvOS, watchOS, and MinGW) to the multiplatform project.
  *
  * @param config The configuration to apply to each native target.
  */
@@ -176,6 +214,8 @@ inline fun KotlinMultiplatformExtension.withNative(crossinline config: KotlinNat
     withLinux(config)
     withMacos(config)
     withIos(config)
+    withTvos(config)
+    withWatchos(config)
     withMingw(config)
 }
 

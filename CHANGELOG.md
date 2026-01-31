@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+### Added
+
+- KMP target extensions for recommended watchOS and tvOS targets
+
+## [1.10.2]
+
 ### Removed
 
 - Automatic changelog update via CI
