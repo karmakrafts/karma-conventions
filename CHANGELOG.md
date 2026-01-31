@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.10.16]
+
 ### Changed
 
 - defaultCompilerOptions KMP extension now looks like a DSL function
