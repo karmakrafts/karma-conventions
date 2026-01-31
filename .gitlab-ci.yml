@@ -193,17 +193,17 @@ release:github:
       found { print }
       ' "CHANGELOG.md" > release_notes.md
       echo "Extracted release notes"
-      BODY_JSON=$(jq -Rs '.' < release_notes.md)
       HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$GITHUB_API/repos/$GITHUB_REPO/releases" \
         -H "Authorization: token $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github+json" \
-        -d "{
-              \"tag_name\": \"$CI_COMMIT_TAG\",
-              \"name\": \"$CI_COMMIT_TAG\",
-              \"body\": \"Release Notes:\n$BODY_JSON\",
-              \"draft\": false,
-              \"prerelease\": false
-            }")
+        -d "$(jq -n \
+          --arg tag "$CI_COMMIT_TAG" \
+          --arg body " $(cat release_notes.md)" \
+          '{
+            tag_name: $tag,
+            name: $tag,
+            body: $body
+          }')")
       if [ "$HTTP_STATUS" -eq 201 ]; then 
           echo "✅ GitHub release created successfully!"
       else 
