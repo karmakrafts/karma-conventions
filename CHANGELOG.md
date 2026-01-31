@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+### Fixed
+
+- Fixed default branch name in CI changelog job configuration
+
+## [1.10.3]
+
 ### Added
 
 - KMP target extensions for recommended watchOS and tvOS targets
