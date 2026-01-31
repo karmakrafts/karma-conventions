@@ -2,6 +2,12 @@
 
 ### Fixed
 
+- Fixed GitHub release job not escaping body JSON correctly
+
+## [1.10.8]
+
+### Fixed
+
 - Fixed GitHub release job not escaping changelog for JSON
 
 ## [1.10.7]

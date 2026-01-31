@@ -198,9 +198,9 @@ release:github:
         -H "Authorization: token $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github+json" \
         -d '{
-              "tag_name": "'"$CI_COMMIT_TAG"'",
-              "name": "'"$CI_COMMIT_TAG"'",
-              "body": "'"$BODY_JSON"'",
+              "tag_name": "$CI_COMMIT_TAG",
+              "name": "$CI_COMMIT_TAG",
+              "body": "$BODY_JSON",
               "draft": false,
               "prerelease": false
             }')
