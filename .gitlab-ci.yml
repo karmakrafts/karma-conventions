@@ -63,6 +63,8 @@ changelog:update:
     - *if-release
   script:
     - |
+      git clone "$CI_PROJECT_URL" update-changelog
+      cd update-changelog
       echo "Updating CHANGELOG.md for next release"
       sed -i '' "s/^## \[Unreleased\]/## [Unreleased]\\
       \\
@@ -71,7 +73,9 @@ changelog:update:
       git config user.email "gitlab-ci@example.com"
       git add CHANGELOG.md
       git commit -m "[skip-ci] Update changelog for next release"
-      git push https://gitlab-ci-token:${CI_PUSH_TOKEN}@git.karmakrafts.dev/kk/karma-conventions.git master
+      git push https://gitlab-ci-token:${CI_PUSH_TOKEN}@git.karmakrafts.dev/kk/karma-conventions.git
+      cd ..
+      rm -rf update-changelog
   tags:
     - macos
 

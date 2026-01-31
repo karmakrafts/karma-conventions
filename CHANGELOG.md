@@ -2,6 +2,12 @@
 
 ### Fixed
 
+- Fixed update changelog job Git authentication in CI config
+
+## [1.10.4]
+
+### Fixed
+
 - Fixed default branch name in CI changelog job configuration
 
 ## [1.10.3]
