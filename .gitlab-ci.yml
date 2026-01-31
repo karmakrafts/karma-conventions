@@ -197,13 +197,13 @@ release:github:
       HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$GITHUB_API/repos/$GITHUB_REPO/releases" \
         -H "Authorization: token $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github+json" \
-        -d '{
-              "tag_name": "'$CI_COMMIT_TAG'",
-              "name": "'$CI_COMMIT_TAG'",
-              "body": "'$BODY_JSON'",
-              "draft": false,
-              "prerelease": false
-            }')
+        -d "{
+              \"tag_name\": \"$CI_COMMIT_TAG\",
+              \"name\": \"$CI_COMMIT_TAG\",
+              \"body\": \"$BODY_JSON\",
+              \"draft\": false,
+              \"prerelease\": false
+            }")
       if [ "$HTTP_STATUS" -eq 201 ]; then 
           echo "✅ GitHub release created successfully!"
       else 
