@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+### Fixed
+
+- Fixed GitHub release job not escaping changelog for JSON
+
+## [1.10.7]
+
 ### Added
 
 - Mirror releases to GitHub
