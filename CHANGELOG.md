@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.10.9]
+
 ### Fixed
 
 - Fixed GitHub release job not escaping body JSON correctly
