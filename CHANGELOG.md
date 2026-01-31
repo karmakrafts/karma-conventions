@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.10.5]
+
 ### Fixed
 
 - Fixed update changelog job Git authentication in CI config
