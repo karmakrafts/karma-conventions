@@ -2,6 +2,12 @@
 
 ### Fixed
 
+- Fix GitHub release infos not being expanded
+
+## [1.10.9]
+
+### Fixed
+
 - Fixed GitHub release job not escaping body JSON correctly
 
 ## [1.10.8]
