@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+### Fixed
+
+- Fixed automatic changelog update in CI configuration
+
+## [1.10.0]
+
 ### Added
 
 - New changelog system

@@ -62,7 +62,9 @@ changelog:update:
   script:
     - |
       echo "Updating CHANGELOG.md for next release"
-      sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n## [$CI_COMMIT_TAG] - $(date +%Y-%m-%d)/" CHANGELOG.md
+      sed -i '' "s/## \[Unreleased\]/## [Unreleased]\
+      \
+      ## \[$CI_COMMIT_TAG\]/" CHANGELOG.md
       git config user.name "GitLab CI"
       git config user.email "ci@gitlab"
       git add CHANGELOG.md
