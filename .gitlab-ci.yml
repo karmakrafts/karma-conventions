@@ -123,22 +123,38 @@ build:
 
 # ------------------------------ Publish
 
-publish-gitlab:
+publish-gitlab:snapshot:
   stage: publish
   rules:
     - *if-not-skip-ci
     - *if-main
+  script:
+    - ./gradlew publishAllPublicationsToGitLabRepository
+  tags:
+    - macos
+
+publish-central:snapshot:
+  stage: publish
+  rules:
+    - *if-not-skip-ci
+    - *if-main
+  script:
+    - ./gradlew publishToSonatype closeAndReleaseStagingRepositories
+  tags:
+    - macos
+
+publish-gitlab:release:
+  stage: publish
+  rules:
     - *if-release
   script:
     - ./gradlew publishAllPublicationsToGitLabRepository
   tags:
     - macos
 
-publish-central:
+publish-central:release:
   stage: publish
   rules:
-    - *if-not-skip-ci
-    - *if-main
     - *if-release
   script:
     - ./gradlew publishToSonatype closeAndReleaseStagingRepositories

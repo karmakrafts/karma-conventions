@@ -4,6 +4,10 @@
 
 - KMP target extensions for recommended watchOS and tvOS targets
 
+### Changed
+
+- Split publishing tasks in CI config for snapshots and releases
+
 ## [1.10.2]
 
 ### Removed
