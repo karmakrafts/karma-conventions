@@ -380,6 +380,7 @@ inline fun KotlinMultiplatformExtension.withAndroidLibrary(
  * since the new AGP library extension isn't fully supported by the hierarchy DSL yet.
  */
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
+@KotlinGradlePluginDsl
 fun KotlinHierarchyBuilder.withAndroidLibrary() {
     withCompilations { compilation -> compilation is KotlinMultiplatformAndroidCompilation }
 }
@@ -387,6 +388,7 @@ fun KotlinHierarchyBuilder.withAndroidLibrary() {
 /**
  * Applies common compiler options to all available KMP targets.
  */
+@KotlinGradlePluginDsl
 fun KotlinMultiplatformExtension.defaultCompilerOptions() {
     compilerOptions {
         freeCompilerArgs.addAll(

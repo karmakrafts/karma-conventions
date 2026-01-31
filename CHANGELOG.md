@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Changed
+
+- defaultCompilerOptions KMP extension now looks like a DSL function
+- withAndroidLibrary KMP hierarchy extension now looks like a DSL function
+
 ## [1.10.15]
 
 ### Fixed
