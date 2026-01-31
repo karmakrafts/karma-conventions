@@ -200,7 +200,7 @@ release:github:
         -d "{
               \"tag_name\": \"$CI_COMMIT_TAG\",
               \"name\": \"$CI_COMMIT_TAG\",
-              \"body\": \"$BODY_JSON\",
+              \"body\": \"Release Notes:\n$BODY_JSON\",
               \"draft\": false,
               \"prerelease\": false
             }")
