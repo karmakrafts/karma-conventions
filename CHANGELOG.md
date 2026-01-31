@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- Fixed positioning of headers in GitHub releases
+
 ## [1.10.14]
 
 ### Added
