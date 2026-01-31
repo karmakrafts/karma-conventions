@@ -20,9 +20,11 @@ variables:
 
 # ------------------------------ Conditions
 
-.if-merge-request: &if-merge-request
+.if-not-skip-ci: &if-not-skip-ci
   - if: '$CI_COMMIT_MESSAGE =~ /\[skip-ci\]/'
     when: never
+
+.if-merge-request: &if-merge-request
   - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
   - if: $CI_PIPELINE_SOURCE == "schedule"
     when: never
@@ -45,6 +47,7 @@ changelog:check:
   stage: check_changelog
   interruptible: true
   rules:
+    - *if-not-skip-ci
     - *if-merge-request
   script:
     - |
@@ -88,12 +91,9 @@ security:
     paths:
       - .trivycache/
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      allow_failure: true
-    - if: '$CI_COMMIT_TAG =~ /^\d+.\d+.\d+.*/'
-      allow_failure: false
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      allow_failure: false
+    - *if-not-skip-ci
+    - *if-merge-request
+    - *if-main
   artifacts:
     when: always
     reports:
@@ -113,6 +113,7 @@ build:
   stage: build
   interruptible: true
   rules:
+    - *if-not-skip-ci
     - *if-merge-request
     - *if-main
   script:
@@ -125,6 +126,7 @@ build:
 publish-gitlab:
   stage: publish
   rules:
+    - *if-not-skip-ci
     - *if-main
     - *if-release
   script:
@@ -135,6 +137,7 @@ publish-gitlab:
 publish-central:
   stage: publish
   rules:
+    - *if-not-skip-ci
     - *if-main
     - *if-release
   script:
