@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.10.6]
+
 ### Added
 
 - Added Documentation and Changelog links to releases
