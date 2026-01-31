@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.10.15]
+
 ### Fixed
 
 - Fixed positioning of headers in GitHub releases
