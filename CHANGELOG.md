@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.10.9]
+
 ### Fixed
 
 - Fix GitHub release infos not being expanded
