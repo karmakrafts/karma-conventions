@@ -21,7 +21,7 @@ This plugin provides many utilities, including but no limited to:
 * Publishing defaults & extensions
 * Signing
 * Network connectivity
-* Kotlin target extensions
+* Kotlin target extensions (for JVM & Multiplatform)
 * Kotlin CInterop extensions
 * Documentation generation using [Dokka](https://github.com/Kotlin/dokka)
 
