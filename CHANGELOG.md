@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.10.17]
+
 ### Fixed
 
 - Fix Trivy CI configuration being broken due to faulty runner drive
