@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+### Fixed
+
+- Fix Trivy CI configuration being broken due to faulty runner drive
+
+### Changed
+
+- Combine publishing CI task for GitLab & Maven Central
+
 ## [1.10.16]
 
 ### Changed

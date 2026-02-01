@@ -17,6 +17,7 @@ stages:
 variables:
   GRADLE_OPTS: -Dorg.gradle.daemon=false
   FF_USE_FASTZIP: "true"
+  DOCS_URL: "https://docs.karmakrafts.dev/karma-conventions"
 
 # ------------------------------ Conditions
 
@@ -100,7 +101,7 @@ security:
     - ./gradlew dependenciesForAll --write-locks --no-parallel > dependencies.txt
   script:
     - trivy repo ./ --exit-code 0
-    - trivy repo ./ --exit-code 0 --format template --template "@/Volumes/Data/contrib/gitlab.tpl" --output report.json
+    - trivy repo ./ --exit-code 0 --format template --template "@/Volumes/Runner/contrib/gitlab.tpl" --output report.json
     - trivy repo ./ --exit-code 1 --severity CRITICAL
   tags:
     - macos
@@ -120,23 +121,13 @@ build:
 
 # ------------------------------ Publish
 
-publish:gitlab:
+publish:maven:
   stage: publish
   rules:
     - *if-main
     - *if-release
   script:
-    - ./gradlew publishAllPublicationsToGitLabRepository
-  tags:
-    - macos
-
-publish:central:
-  stage: publish
-  rules:
-    - *if-main
-    - *if-release
-  script:
-    - ./gradlew publishToSonatype closeAndReleaseStagingRepositories
+    - ./gradlew publishAllPublicationsToGitLabRepository publishToSonatype closeAndReleaseStagingRepositories
   tags:
     - macos
 
@@ -170,7 +161,7 @@ release:gitlab:
     assets:
       links:
         - name: "Documentation"
-          url: "https://docs.karmakrafts.dev/karma-conventions"
+          url: "$DOCS_URL"
           link_type: "other"
         - name: "Changelog"
           url: "$CI_PROJECT_URL/-/blob/$CI_COMMIT_TAG/CHANGELOG.md"
@@ -185,7 +176,6 @@ release:github:
   variables:
     GITHUB_API: "https://api.github.com"
     GITHUB_REPO: "karmakrafts/karma-conventions"
-    DOCS_URL: "https://docs.karmakrafts.dev/karma-conventions"
     CHANGELOG_URL: "$CI_PROJECT_URL/-/blob/$CI_COMMIT_TAG/CHANGELOG.md"
     GITLAB_RELEASE_URL: "$CI_PROJECT_URL/-/releases/$CI_COMMIT_TAG"
   script:
