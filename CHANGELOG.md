@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.11.0]
+
 ### Changed
 
 - Wire through name parameter for KMP target extensions
