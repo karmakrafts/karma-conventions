@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Changed
+
+- Properly link external documentation for generated docs
+
 ## [1.11.0]
 
 ### Changed

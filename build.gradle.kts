@@ -24,7 +24,6 @@ import kotlin.io.path.div
 import kotlin.io.path.writeText
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.gradleNexus)
@@ -131,6 +130,24 @@ dokka {
         html {
             homepageLink = "https://docs.karmakrafts.dev"
             footerMessage = "&copy; ${ZonedDateTime.now().year} Karma Krafts"
+        }
+    }
+    dokkaSourceSets {
+        named("main") {
+            externalDocumentationLinks {
+                register("java") {
+                    val version = libs.versions.java.get()
+                    url.set(uri("https://docs.oracle.com/en/java/javase/$version/docs/api/"))
+                }
+                register("gradle") {
+                    val version = gradle.gradleVersion
+                    url.set(uri("https://docs.gradle.org/$version/javadoc/"))
+                }
+                register("androidGradle") {
+                    val version = libs.versions.android.gradle.get().substringBeforeLast('.')
+                    url.set(uri("https://developer.android.com/reference/tools/gradle-api/$version/classes/"))
+                }
+            }
         }
     }
 }
