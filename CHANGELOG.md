@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Changed
+
+- Wire through name parameter for KMP target extensions
+- Update AGP to 9.0.1
+
 ## [1.10.17]
 
 ### Fixed
