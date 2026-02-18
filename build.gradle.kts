@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
+import org.jetbrains.dokka.gradle.tasks.DokkaGenerateTask
 import java.net.URI
+import java.nio.file.StandardOpenOption
 import java.time.ZonedDateTime
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.writeText
@@ -57,7 +60,7 @@ java {
 
 tasks {
     val versionString = rootProject.version.toString()
-    val createVersionFile by registering(DefaultTask::class) {
+    val createVersionFile by registering {
         outputs.file(layout.buildDirectory.asFile.map { file -> (file.toPath() / "generated" / "karma-conventions.version").toFile() })
         outputs.upToDateWhen { false } // Always re-generate this file
         doFirst {
@@ -84,6 +87,27 @@ tasks {
             from(zipTree(javadocJar.outputs.files.first()))
             into(docsDir)
         }
+    }
+    // We need to patch KGPs package-list since they change module names for aesthetic reasons -.-
+    val dokkaPatchKgpPackageList by registering {
+        group = "dokka"
+        outputs.file(layout.buildDirectory.asFile.map { file ->
+            (file.toPath() / "docs" / "kgp" / "package-list").toFile()
+        })
+        doFirst {
+            val outputPath = outputs.files.first().toPath()
+            outputPath.createParentDirectories()
+            URI.create("https://kotlinlang.org/api/kotlin-gradle-plugin/package-list").toURL().openStream().bufferedReader().use { reader -> // @formatter:off
+                outputPath.writeText(reader.readText()
+                        .replace("module:The Kotlin Gradle plugins API", "module:kotlin-gradle-plugin-api")
+                        .replace("module:The Compose compiler Gradle plugin", "module:compose-compiler-gradle-plugin"),
+                        Charsets.UTF_8,
+                        StandardOpenOption.CREATE)
+                } // @formatter:on
+        }
+    }
+    withType<DokkaGenerateTask>().configureEach {
+        dependsOn(dokkaPatchKgpPackageList)
     }
 }
 
@@ -144,12 +168,15 @@ dokka {
                     packageListUrl.set(uri("https://docs.gradle.org/$version/javadoc/element-list"))
                 }
                 register("kotlinGradle") {
-                    // We always assume the latest/current version here
                     url.set(uri("https://kotlinlang.org/api/kotlin-gradle-plugin/"))
+                    packageListUrl.set(layout.buildDirectory.asFile.map { file ->
+                        (file.toPath() / "docs" / "kgp" / "package-list").toUri()
+                    })
                 }
                 register("androidGradle") {
                     val version = libs.versions.android.gradle.get().substringBeforeLast('.')
                     url.set(uri("https://developer.android.com/reference/tools/gradle-api/$version/"))
+                    packageListUrl.set(uri("https://developer.android.com/reference/tools/gradle-api/$version/package-list"))
                 }
             }
         }

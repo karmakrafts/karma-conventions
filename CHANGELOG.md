@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- Patch package-list for external KGP documentation to workaround broken module entries
+
 ## [1.11.3]
 
 ### Add
