@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.11.3]
+
 ### Add
 
 - Add external documentation for KGP
