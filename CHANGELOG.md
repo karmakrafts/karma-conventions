@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.11.2]
+
 ### Changed
 
 - Fix links for external Oracle and Android docs
