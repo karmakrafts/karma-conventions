@@ -143,6 +143,10 @@ dokka {
                     url.set(uri("https://docs.gradle.org/$version/javadoc/"))
                     packageListUrl.set(uri("https://docs.gradle.org/$version/javadoc/element-list"))
                 }
+                register("kotlinGradle") {
+                    // We always assume the latest/current version here
+                    url.set(uri("https://kotlinlang.org/api/kotlin-gradle-plugin/"))
+                }
                 register("androidGradle") {
                     val version = libs.versions.android.gradle.get().substringBeforeLast('.')
                     url.set(uri("https://developer.android.com/reference/tools/gradle-api/$version/"))
