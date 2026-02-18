@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.11.4]
+
 ### Fixed
 
 - Patch package-list for external KGP documentation to workaround broken module entries
