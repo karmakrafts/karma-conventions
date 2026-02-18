@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.11.1]
+
 ### Changed
 
 - Properly link external documentation for generated docs
