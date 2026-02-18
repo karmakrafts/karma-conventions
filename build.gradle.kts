@@ -69,8 +69,7 @@ tasks {
     }
     processResources { dependsOn(createVersionFile) }
     compileKotlin { dependsOn(processResources) }
-    @Suppress("UNUSED")
-    val sourcesJar by getting {
+    @Suppress("UNUSED") val sourcesJar by getting {
         dependsOn(compileJava)
         dependsOn(compileTestJava)
     }
@@ -119,8 +118,7 @@ System.getenv("CI_PROJECT_ID")?.let {
         lockAllConfigurations()
     }
     tasks {
-        @Suppress("UNUSED")
-        val dependenciesForAll by registering(DependencyReportTask::class)
+        @Suppress("UNUSED") val dependenciesForAll by registering(DependencyReportTask::class)
     }
 }
 
@@ -138,14 +136,16 @@ dokka {
                 register("java") {
                     val version = libs.versions.java.get()
                     url.set(uri("https://docs.oracle.com/en/java/javase/$version/docs/api/"))
+                    packageListUrl.set(uri("https://docs.oracle.com/en/java/javase/$version/docs/api/element-list"))
                 }
                 register("gradle") {
                     val version = gradle.gradleVersion
                     url.set(uri("https://docs.gradle.org/$version/javadoc/"))
+                    packageListUrl.set(uri("https://docs.gradle.org/$version/javadoc/element-list"))
                 }
                 register("androidGradle") {
                     val version = libs.versions.android.gradle.get().substringBeforeLast('.')
-                    url.set(uri("https://developer.android.com/reference/tools/gradle-api/$version/classes/"))
+                    url.set(uri("https://developer.android.com/reference/tools/gradle-api/$version/"))
                 }
             }
         }
