@@ -59,8 +59,7 @@ fun KotlinNativeTarget.defaultMacosTarget() {
  */
 @KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withMacos(
-    name: String = "macos",
-    crossinline config: KotlinNativeTarget.() -> Unit = {}
+    name: String = "macos", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
     macosArm64("${name}Arm64") {
         defaultMacosTarget()
@@ -82,8 +81,7 @@ fun KotlinNativeTarget.defaultIosTarget() {
  */
 @KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withIos(
-    name: String = "ios",
-    crossinline config: KotlinNativeTarget.() -> Unit = {}
+    name: String = "ios", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
     iosArm64("${name}Arm64") {
         defaultIosTarget()
@@ -102,8 +100,7 @@ inline fun KotlinMultiplatformExtension.withIos(
  */
 @KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withTvos(
-    name: String = "tvos",
-    crossinline config: KotlinNativeTarget.() -> Unit = {}
+    name: String = "tvos", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
     tvosArm64("${name}Arm64") {
         defaultIosTarget()
@@ -122,8 +119,7 @@ inline fun KotlinMultiplatformExtension.withTvos(
  */
 @KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withWatchos(
-    name: String = "watchos",
-    crossinline config: KotlinNativeTarget.() -> Unit = {}
+    name: String = "watchos", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
     watchosArm32("${name}Arm32") {
         defaultIosTarget()
@@ -153,8 +149,7 @@ fun KotlinNativeTarget.defaultLinuxTarget() {
  */
 @KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withLinux(
-    name: String = "linux",
-    crossinline config: KotlinNativeTarget.() -> Unit = {}
+    name: String = "linux", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
     linuxX64("${name}X64") {
         defaultLinuxTarget()
@@ -180,8 +175,7 @@ fun KotlinNativeTarget.defaultAndroidNativeTarget() {
  */
 @KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withAndroidNative(
-    name: String = "androidNative",
-    crossinline config: KotlinNativeTarget.() -> Unit = {}
+    name: String = "androidNative", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
     androidNativeArm32("${name}Arm32") {
         defaultAndroidNativeTarget()
@@ -215,8 +209,7 @@ fun KotlinNativeTarget.defaultMingwTarget() {
  */
 @KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withMingw(
-    name: String = "mingw",
-    crossinline config: KotlinNativeTarget.() -> Unit = {}
+    name: String = "mingw", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
     mingwX64("${name}X64") {
         defaultMingwTarget()
@@ -257,8 +250,7 @@ fun KotlinJsTargetDsl.defaultJsTarget() {
  */
 @KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withJs(
-    name: String = "js",
-    crossinline config: KotlinJsTargetDsl.() -> Unit = {}
+    name: String = "js", crossinline config: KotlinJsTargetDsl.() -> Unit = {}
 ) {
     js(name) {
         defaultJsTarget()
@@ -274,8 +266,7 @@ inline fun KotlinMultiplatformExtension.withJs(
 @KotlinGradlePluginDsl
 @OptIn(ExperimentalWasmDsl::class)
 inline fun KotlinMultiplatformExtension.withWasm(
-    name: String = "wasmJs",
-    crossinline config: KotlinJsTargetDsl.() -> Unit = {}
+    name: String = "wasmJs", crossinline config: KotlinJsTargetDsl.() -> Unit = {}
 ) {
     wasmJs(name) {
         config()
@@ -338,8 +329,7 @@ inline fun KotlinJsTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDsl.() -
  */
 @KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withJvm(
-    name: String = "jvm",
-    crossinline config: KotlinJvmTarget.() -> Unit = {}
+    name: String = "jvm", crossinline config: KotlinJvmTarget.() -> Unit = {}
 ) {
     jvm(name) {
         config()

@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+### Added
+
+- Added new Dokka configuration DSL for easily linking dependency documentation
+
+### Changed
+
+- Updated Kotlin to 2.3.20-RC
+
 ## [1.11.4]
 
 ### Fixed

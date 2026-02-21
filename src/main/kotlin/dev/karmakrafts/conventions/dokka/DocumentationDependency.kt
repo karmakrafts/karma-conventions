@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package dev.karmakrafts.conventions
+package dev.karmakrafts.conventions.dokka
 
-object PluginIds {
-    const val JAVA: String = "java"
-    const val KOTLIN_JVM: String = "org.jetbrains.kotlin.jvm"
-    const val KOTLIN_MP: String = "org.jetbrains.kotlin.multiplatform"
-    const val ANDROID_APP: String = "com.android.application"
-    const val ANDROID_LIB: String = "com.android.kotlin.multiplatform.library"
-    const val DOKKA: String = "org.jetbrains.dokka"
+sealed interface DocumentationDependency {
+    data class Project(val path: String) : DocumentationDependency
+    data class Website(val packageList: String) : DocumentationDependency
 }

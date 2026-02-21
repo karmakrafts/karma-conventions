@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package dev.karmakrafts.conventions
+package dev.karmakrafts.conventions.dokka
 
+import dev.karmakrafts.conventions.PluginIds
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -27,24 +28,12 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.engine.plugins.DokkaHtmlPluginParameters
 import org.jetbrains.dokka.gradle.tasks.DokkaGenerateTask
+import java.net.URI
 import java.time.ZonedDateTime
+import kotlin.io.path.div
 
-fun Project.defaultDokkaConfig( // @formatter:off
-    homepageLink: String? = "https://docs.karmakrafts.dev",
-    copyright: String = "&copy; ${ZonedDateTime.now().year} Karma Krafts",
-    publishDocs: Boolean = true
-) { // @formatter:on
-    check(pluginManager.hasPlugin("org.jetbrains.dokka")) { "Dokka plugin must be applied" }
-    // Configure Dokka moduleName from project and set appropriate documentation footer copyright
-    extensions.getByType<DokkaExtension>().apply {
-        moduleName.set(this@defaultDokkaConfig.name)
-        pluginsConfiguration.withType<DokkaHtmlPluginParameters> {
-            this.homepageLink.set(homepageLink)
-            footerMessage.set(copyright)
-        }
-    }
-    // Configure publishing task when enabled and root directory is provided
-    // Set up a dokkaJar task
+@PublishedApi
+internal fun Project.registerDefaultDokkaJar(publishDocs: Boolean) {
     val dokkaHtmlJar = tasks.register("dokkaHtmlJar", Jar::class) { // @formatter:off
         group = "dokka"
         archiveClassifier.set("javadoc")
@@ -61,7 +50,10 @@ fun Project.defaultDokkaConfig( // @formatter:off
             into("$docsDir/${project.name}")
         }
     }
-    // Attach generated JAR to all maven publications of this project if plugin is present
+}
+
+@PublishedApi
+internal fun Project.registerPublicationDokkaJars() {
     if (pluginManager.hasPlugin("maven-publish")) extensions.getByType<PublishingExtension>().apply {
         publications.withType<MavenPublication> publication@{
             val dokkaJar = tasks.register("${name}DokkaJar", Jar::class) {
@@ -79,4 +71,52 @@ fun Project.defaultDokkaConfig( // @formatter:off
             artifact(dokkaJar)
         }
     }
+}
+
+inline fun Project.configureDokka( // @formatter:off
+    homepageLink: String = "https://docs.karmakrafts.dev",
+    copyright: String = "&copy; ${ZonedDateTime.now().year} Karma Krafts",
+    publishDocs: Boolean = true,
+    crossinline config: DocumentationConfigSpec = {}
+) { // @formatter:on
+    check(pluginManager.hasPlugin(PluginIds.DOKKA)) { "Dokka plugin must be applied" }
+    val config = DocumentationConfig(this, homepageLink).apply(config)
+    val dependencyProjects = config.resolveProjects()
+    val dependencyWebsites = config.getWebsites()
+    extensions.getByType<DokkaExtension>().apply {
+        moduleName.set(this@configureDokka.name)
+        pluginsConfiguration.withType<DokkaHtmlPluginParameters> {
+            this.homepageLink.set(homepageLink)
+            footerMessage.set(copyright)
+        }
+        // All dependency projects configured in the closure need to be registered with their package-list files
+        dokkaSourceSets.configureEach {
+            externalDocumentationLinks.apply {
+                for ((url, project) in dependencyProjects) {
+                    register(project.path) {
+                        this.url.set(URI.create(url))
+                        packageListUrl.set(project.layout.buildDirectory.asFile.map { dir ->
+                            (dir.toPath() / "dokka" / "html" / project.name / "package-list").toUri()
+                        })
+                    }
+                }
+                for ((url, website) in dependencyWebsites) {
+                    register(url) {
+                        this.url.set(URI.create(url))
+                        packageListUrl.set(URI.create(website.packageList))
+                    }
+                }
+            }
+        }
+    }
+    // Make sure task dependencies between modules are wired correctly
+    tasks.named("dokkaGenerate") {
+        for ((_, project) in dependencyProjects) {
+            project.tasks.findByName("dokkaGenerate")?.let { task ->
+                dependsOn(task)
+            }
+        }
+    }
+    registerDefaultDokkaJar(publishDocs)
+    registerPublicationDokkaJars()
 }
