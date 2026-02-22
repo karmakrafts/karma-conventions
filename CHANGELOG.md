@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- Fixed documentation dependencies not wiring task graph correctly
+
 ## [1.12.0]
 
 ### Added
