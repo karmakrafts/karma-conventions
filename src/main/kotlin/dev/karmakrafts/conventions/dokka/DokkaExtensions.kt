@@ -110,11 +110,9 @@ inline fun Project.configureDokka( // @formatter:off
         }
     }
     // Make sure task dependencies between modules are wired correctly
-    tasks.named("dokkaGenerate") {
+    tasks.named("dokkaGeneratePublicationHtml") {
         for ((_, project) in dependencyProjects) {
-            project.tasks.findByName("dokkaGenerate")?.let { task ->
-                dependsOn(task)
-            }
+            dependsOn(project.tasks.named("dokkaGeneratePublicationHtml"))
         }
     }
     registerDefaultDokkaJar(publishDocs)
