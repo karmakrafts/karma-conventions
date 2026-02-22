@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.12.0]
+
 ### Added
 
 - Added new Dokka configuration DSL for easily linking dependency documentation
