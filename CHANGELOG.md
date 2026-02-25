@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- GitLab and Git APIs are not compatible with Gradle configuration cache
+
 ## [1.12.1]
 
 ### Fixed

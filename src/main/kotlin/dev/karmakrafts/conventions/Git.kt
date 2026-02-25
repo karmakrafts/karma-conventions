@@ -63,6 +63,7 @@ class GitRepository internal constructor( // @formatter:off
         commandLine(tag?.let {
             listOf("git", "clone", "--branch", tag, "--single-branch", address, this@GitRepository.name)
         } ?: listOf("git", "clone", address, this@GitRepository.name))
+        val localPath = this@GitRepository.localPath
         onlyIf { localPath.notExists() }
     }
 
@@ -77,7 +78,7 @@ class GitRepository internal constructor( // @formatter:off
         dependsOn(cloneTask)
         workingDir = localPath.toFile()
         commandLine("git", "pull", "--force")
-        onlyIf { localPath.exists() }
+        onlyIf { workingDir.toPath().exists() }
     }
 }
 

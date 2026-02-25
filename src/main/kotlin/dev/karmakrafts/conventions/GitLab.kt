@@ -49,7 +49,6 @@ import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
-import kotlin.io.path.readBytes
 
 /**
  * Represents a GitLab server instance for interacting with GitLab API.
@@ -346,33 +345,40 @@ class GitLabPackageArtifact internal constructor(
     val downloadTask: TaskProvider<Task> =
         project.tasks.register("download${projectName.capitalized()}${suffix.capitalized()}") {
             group = projectName
+            outputs.file(localPath.toFile())
+            val packageUrl = this@GitLabPackageArtifact.packageUrl
+            val fileName = this@GitLabPackageArtifact.fileName
             doLast {
+                val filePath = outputs.files.first().toPath()
                 val url = "$packageUrl/$fileName"
-                project.logger.lifecycle("Downloading $url..")
-                localPath.deleteIfExists()
-                localPath.createDirectories()
-                fetchRaw(url)?.use { Files.copy(it, localPath, StandardCopyOption.REPLACE_EXISTING) }
-                project.logger.lifecycle("Downloaded $localPath")
+                logger.lifecycle("Downloading $url..")
+                filePath.deleteIfExists()
+                filePath.createDirectories()
+                fetchRaw(url)?.use { Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING) }
+                logger.lifecycle("Downloaded $filePath")
             }
+            val path = packageInstance.path
+            val name = if (path.startsWith("generic/")) path.substringAfter("generic/") else path
+            val packageFiles = packageInstance.packageRegistry.getPackageFiles(name, packageInstance.version)
             onlyIf {
-                if (project.isOffline) {
-                    project.logger.lifecycle("Skipping download in offline mode")
-                    return@onlyIf false
+                val filePath = outputs.files.first()
+                try {
+                    val packageFile = packageFiles.find { it.fileName == fileName }
+                    val hashDigest = packageFile?.hashType?.createDigest()
+                    val remoteHash = packageFile?.hash
+                    val localHash = if (filePath.exists() && hashDigest != null) {
+                        hashDigest.digest(filePath.readBytes()).joinToString("") { "%02x".format(it) }
+                    }
+                    else null
+                    if (localHash == null) return@onlyIf true
+                    logger.lifecycle("Got local hash sum $localHash")
+                    if (remoteHash == null) return@onlyIf false
+                    logger.lifecycle("Got remote hash sum $remoteHash")
+                    remoteHash != localHash
+                } catch (_: Throwable) {
+                    logger.lifecycle("Could not compare hashes, we are likely offline so skip download")
+                    false
                 }
-                val path = packageInstance.path
-                val name = if (path.startsWith("generic/")) path.substringAfter("generic/") else path
-                val packageFiles = packageInstance.packageRegistry.getPackageFiles(name, packageInstance.version)
-                val packageFile = packageFiles.find { it.fileName == fileName }
-                val hashDigest = packageFile?.hashType?.createDigest()
-                val remoteHash = packageFile?.hash
-                val localHash = if (localPath.exists() && hashDigest != null) {
-                    hashDigest.digest(localPath.readBytes()).joinToString("") { "%02x".format(it) }
-                }
-                else null
-                val result = remoteHash != localHash
-                if (result) project.logger.lifecycle("Hash sum doesn't match ($remoteHash)")
-                else project.logger.lifecycle("Hash sum matches ($remoteHash)")
-                result
             }
         }
 
@@ -385,12 +391,11 @@ class GitLabPackageArtifact internal constructor(
     val extractTask: TaskProvider<Copy> = project.tasks.register<Copy>(
         "extract${projectName.capitalized()}${suffix.capitalized()}"
     ) {
+        dependsOn("download${projectName.capitalized()}${suffix.capitalized()}")
         group = projectName
-        dependsOn(downloadTask)
-        mustRunAfter(downloadTask)
         from(project.zipTree(localPath.toFile()))
         into(outputDirectoryPath.toFile())
-        doLast { project.logger.lifecycle("Extracted $localPath") }
+        doLast { logger.lifecycle("Extracted ${outputs.files.joinToString()}") }
     }
 
     /**
@@ -400,9 +405,11 @@ class GitLabPackageArtifact internal constructor(
      */
     val cleanTask: TaskProvider<Task> =
         project.tasks.register("clean${projectName.capitalized()}${suffix.capitalized()}") {
+            inputs.file(localPath.toFile())
             doFirst {
-                localPath.deleteIfExists()
-                project.logger.lifecycle("Removed $localPath")
+                val path = inputs.files.first().toPath()
+                path.deleteIfExists()
+                logger.lifecycle("Removed $path")
             }
         }
 }
