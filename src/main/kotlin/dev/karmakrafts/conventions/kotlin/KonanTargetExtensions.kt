@@ -17,6 +17,7 @@
 package dev.karmakrafts.conventions.kotlin
 
 import org.gradle.internal.extensions.stdlib.capitalized
+import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
@@ -51,6 +52,23 @@ val KonanTarget.architectureName: String
     get() = architecture.name.lowercase()
 
 /**
+ * Same semantics as [KonanTarget.architectureName], except that the architecture
+ * names are (more) accurate.
+ * This translates to the following name mappings:
+ *  - X86 -> i386
+ *  - X64 -> amd64
+ *  - ARM32 -> arm32
+ *  - ARM64 -> arm64
+ */
+val KonanTarget.accurateArchitectureName: String
+    get() = when (architecture) {
+        Architecture.X86 -> "i386"
+        Architecture.X64 -> "amd64"
+        Architecture.ARM32 -> "arm32"
+        Architecture.ARM64 -> "arm64"
+    }
+
+/**
  * Creates a standardized target identifier string by combining family and architecture.
  *
  * This function generates a string in the format "family-architecture" (e.g., "macos-x64",
@@ -59,6 +77,11 @@ val KonanTarget.architectureName: String
  * @return A string in the format "family-architecture"
  */
 fun KonanTarget.toTargetPair(): String = "${familyName}-${architectureName}"
+
+/**
+ * Same as [toTargetPair], except that it uses [accurateArchitectureName] instead of [architectureName].
+ */
+fun KonanTarget.toAccurateTargetPair(): String = "${familyName}-${accurateArchitectureName}"
 
 /**
  * Creates a capitalized task suffix string by combining family and architecture.

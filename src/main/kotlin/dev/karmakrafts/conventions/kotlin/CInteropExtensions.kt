@@ -16,8 +16,12 @@
 
 package dev.karmakrafts.conventions.kotlin
 
+import dev.karmakrafts.conventions.GitLabPackage
 import dev.karmakrafts.conventions.GitLabPackageArtifact
+import org.gradle.internal.extensions.stdlib.capitalized
+import org.jetbrains.kotlin.gradle.plugin.KotlinTargetsDsl
 import org.jetbrains.kotlin.gradle.plugin.mpp.DefaultCInteropSettings
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 /**
  * Makes a C interop processing task depend on the extraction of a GitLab package artifact.
@@ -31,5 +35,35 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.DefaultCInteropSettings
 fun DefaultCInteropSettings.dependsOn(artifact: GitLabPackageArtifact) {
     artifact.project.tasks.named(interopProcessingTaskName) {
         dependsOn(artifact.extractTask)
+    }
+}
+
+/**
+ * Configures a C interop for the [KotlinNativeTarget] using a [GitLabPackage].
+ *
+ * This extension function automatically resolves the correct artifact from the given
+ * [GitLabPackage] based on the target's architecture and family name, and registers
+ * it as a C interop.
+ *
+ * @param name The name of the C interop to register
+ * @param pkg The GitLab package to retrieve the interop artifact from
+ * @param fileSuffix The suffix of the artifact file name. Defaults to "-release"
+ */
+@KotlinTargetsDsl
+fun KotlinNativeTarget.withCInterop( // @formatter:off
+    name: String,
+    pkg: GitLabPackage,
+    fileSuffix: String = "-release"
+) { // @formatter:on
+    compilations.named("main") {
+        val architecture = konanTarget.accurateArchitectureName
+        val fileName = "build-$architecture$fileSuffix"
+        val suffix = "${konanTarget.familyName}${konanTarget.accurateArchitectureName.capitalized()}"
+        val artifact = pkg[fileName, suffix, name]
+        cinterops {
+            register(name) {
+                dependsOn(artifact)
+            }
+        }
     }
 }
