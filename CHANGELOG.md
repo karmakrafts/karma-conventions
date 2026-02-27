@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.12.4]
+
 ### Added
 
 - `withCInterop` extension for `KotlinNativeTarget` to allow directly  
