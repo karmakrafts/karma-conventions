@@ -48,16 +48,18 @@ fun DefaultCInteropSettings.dependsOn(artifact: GitLabPackageArtifact) {
  * @param name The name of the C interop to register
  * @param pkg The GitLab package to retrieve the interop artifact from
  * @param fileSuffix The suffix of the artifact file name. Defaults to "-release"
+ * @param fileExtension The file extension of the package artifact to download. Defaults to "zip"
  */
 @KotlinTargetsDsl
 fun KotlinNativeTarget.withCInterop( // @formatter:off
     name: String,
     pkg: GitLabPackage,
-    fileSuffix: String = "-release"
+    fileSuffix: String = "-release",
+    fileExtension: String = "zip"
 ) { // @formatter:on
     compilations.named("main") {
         val architecture = konanTarget.accurateArchitectureName
-        val fileName = "build-$architecture$fileSuffix"
+        val fileName = "build-$architecture$fileSuffix.$fileExtension"
         val suffix = "${konanTarget.familyName}${konanTarget.accurateArchitectureName.capitalized()}"
         val artifact = pkg[fileName, suffix, name]
         cinterops {
