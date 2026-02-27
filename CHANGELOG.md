@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- `defaultCompilerOptions` extension for `KotlinJvmProjectExtension`
+
 ## [1.12.2]
 
 ### Fixed
