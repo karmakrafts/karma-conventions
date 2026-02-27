@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Added
+
+- `withCInterop` extension for `KotlinNativeTarget` to allow directly  
+  consuming `GitLabPackage` artifacts based on the Konan target.
+
 ## [1.12.3]
 
 ### Added
