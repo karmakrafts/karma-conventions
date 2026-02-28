@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.12.5]
+
 ### Fixed
 
 - Default artifact file name for `withCInterop` not being computed correctly
