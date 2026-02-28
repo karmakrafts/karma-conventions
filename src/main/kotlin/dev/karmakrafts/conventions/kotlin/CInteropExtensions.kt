@@ -59,7 +59,7 @@ fun KotlinNativeTarget.withCInterop( // @formatter:off
 ) { // @formatter:on
     compilations.named("main") {
         val architecture = konanTarget.accurateArchitectureName
-        val fileName = "build-$architecture$fileSuffix.$fileExtension"
+        val fileName = "build-${konanTarget.familyName}-$architecture$fileSuffix.$fileExtension"
         val suffix = "${konanTarget.familyName}${konanTarget.accurateArchitectureName.capitalized()}"
         val artifact = pkg[fileName, suffix, name]
         cinterops {

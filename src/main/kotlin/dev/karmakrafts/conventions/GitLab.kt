@@ -44,6 +44,7 @@ import java.nio.file.StandardOpenOption
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.exists
@@ -353,7 +354,7 @@ class GitLabPackageArtifact internal constructor(
                 val url = "$packageUrl/$fileName"
                 logger.lifecycle("Downloading $url..")
                 filePath.deleteIfExists()
-                filePath.createDirectories()
+                filePath.createParentDirectories()
                 fetchRaw(url)?.use { Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING) }
                 logger.lifecycle("Downloaded $filePath")
             }
