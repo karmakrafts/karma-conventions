@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- Default artifact file name for `withCInterop` not being computed correctly
+
 ## [1.12.4]
 
 ### Added
