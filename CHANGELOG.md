@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Changed
+
+- Updated to Gradle 9.4.0
+- Updated to Kotlin 2.3.20-RC2
+
 ## [1.12.5]
 
 ### Fixed
