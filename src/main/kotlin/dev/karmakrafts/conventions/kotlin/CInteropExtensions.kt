@@ -50,7 +50,6 @@ fun DefaultCInteropSettings.dependsOn(artifact: GitLabPackageArtifact) {
  * @param fileSuffix The suffix of the artifact file name. Defaults to "-release"
  * @param fileExtension The file extension of the package artifact to download. Defaults to "zip"
  */
-@KotlinTargetsDsl
 fun KotlinNativeTarget.withCInterop( // @formatter:off
     name: String,
     pkg: GitLabPackage,

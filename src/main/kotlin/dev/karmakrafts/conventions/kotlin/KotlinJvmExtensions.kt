@@ -22,7 +22,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 /**
  * Applies common compiler options to all available KMP targets.
  */
-@KotlinGradlePluginDsl
 fun KotlinJvmProjectExtension.defaultCompilerOptions() {
     compilerOptions {
         freeCompilerArgs.addAll(

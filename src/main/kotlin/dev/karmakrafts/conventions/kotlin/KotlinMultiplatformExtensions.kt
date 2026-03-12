@@ -57,7 +57,6 @@ fun KotlinNativeTarget.defaultMacosTarget() {
  *
  * @param config The configuration to apply to each macOS target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withMacos(
     name: String = "macos", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
@@ -79,7 +78,6 @@ fun KotlinNativeTarget.defaultIosTarget() {
  *
  * @param config The configuration to apply to each iOS target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withIos(
     name: String = "ios", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
@@ -98,7 +96,6 @@ inline fun KotlinMultiplatformExtension.withIos(
  *
  * @param config The configuration to apply to each tvOS target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withTvos(
     name: String = "tvos", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
@@ -117,7 +114,6 @@ inline fun KotlinMultiplatformExtension.withTvos(
  *
  * @param config The configuration to apply to each watchOS target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withWatchos(
     name: String = "watchos", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
@@ -147,7 +143,6 @@ fun KotlinNativeTarget.defaultLinuxTarget() {
  *
  * @param config The configuration to apply to each Linux target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withLinux(
     name: String = "linux", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
@@ -173,7 +168,6 @@ fun KotlinNativeTarget.defaultAndroidNativeTarget() {
  *
  * @param config The configuration to apply to each Android Native target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withAndroidNative(
     name: String = "androidNative", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
@@ -207,7 +201,6 @@ fun KotlinNativeTarget.defaultMingwTarget() {
  *
  * @param config The configuration to apply to the MinGW target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withMingw(
     name: String = "mingw", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
@@ -222,7 +215,6 @@ inline fun KotlinMultiplatformExtension.withMingw(
  *
  * @param config The configuration to apply to each native target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withNative(crossinline config: KotlinNativeTarget.() -> Unit = {}) {
     withAndroidNative(config = config)
     withLinux(config = config)
@@ -248,7 +240,6 @@ fun KotlinJsTargetDsl.defaultJsTarget() {
  *
  * @param config The configuration to apply to the JavaScript target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withJs(
     name: String = "js", crossinline config: KotlinJsTargetDsl.() -> Unit = {}
 ) {
@@ -263,7 +254,6 @@ inline fun KotlinMultiplatformExtension.withJs(
  *
  * @param config The configuration to apply to the Wasm target.
  */
-@KotlinGradlePluginDsl
 @OptIn(ExperimentalWasmDsl::class)
 inline fun KotlinMultiplatformExtension.withWasm(
     name: String = "wasmJs", crossinline config: KotlinJsTargetDsl.() -> Unit = {}
@@ -278,7 +268,6 @@ inline fun KotlinMultiplatformExtension.withWasm(
  *
  * @param config The configuration to apply to both targets.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withWeb(crossinline config: KotlinJsTargetDsl.() -> Unit = {}) {
     withJs(config = config)
     withWasm(config = config)
@@ -300,7 +289,6 @@ fun KotlinJsSubTargetDsl.defaultBrowserConfig() {
  *
  * @param config The configuration to apply to the browser sub-target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinJsTargetDsl.withBrowser(
     crossinline config: KotlinJsBrowserDsl.() -> Unit = {}
 ) {
@@ -315,7 +303,6 @@ inline fun KotlinJsTargetDsl.withBrowser(
  *
  * @param config The configuration to apply to the Node.js sub-target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinJsTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDsl.() -> Unit = {}) {
     nodejs {
         config()
@@ -327,7 +314,6 @@ inline fun KotlinJsTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDsl.() -
  *
  * @param config The configuration to apply to the JVM target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withJvm(
     name: String = "jvm", crossinline config: KotlinJvmTarget.() -> Unit = {}
 ) {
@@ -345,7 +331,6 @@ inline fun KotlinMultiplatformExtension.withJvm(
  * @param targetSdk A provider to provide the target SDK version the linter is configured at for this application.
  * @param config The configuration to apply to the Android target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withAndroid(
     name: String = "android",
     namespace: String = project.group.toString(),
@@ -379,7 +364,6 @@ inline fun KotlinMultiplatformExtension.withAndroid(
  * @param targetSdk A provider to provide the target SDK version the linter is configured at for this library.
  * @param config The configuration to apply to the Android target.
  */
-@KotlinGradlePluginDsl
 inline fun KotlinMultiplatformExtension.withAndroidLibrary(
     namespace: String = project.group.toString(),
     compileSdk: Provider<String> = project.provider { "36" },
@@ -401,7 +385,6 @@ inline fun KotlinMultiplatformExtension.withAndroidLibrary(
  * since the new AGP library extension isn't fully supported by the hierarchy DSL yet.
  */
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
-@KotlinGradlePluginDsl
 fun KotlinHierarchyBuilder.withAndroidLibrary() {
     withCompilations { compilation -> compilation is KotlinMultiplatformAndroidCompilation }
 }
@@ -409,7 +392,6 @@ fun KotlinHierarchyBuilder.withAndroidLibrary() {
 /**
  * Applies common compiler options to all available KMP targets.
  */
-@KotlinGradlePluginDsl
 fun KotlinMultiplatformExtension.defaultCompilerOptions() {
     compilerOptions {
         freeCompilerArgs.addAll(
