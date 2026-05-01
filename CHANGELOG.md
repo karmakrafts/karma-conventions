@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+### Changed
+
+- `defaultCompilerOptions` does not enable experimental features by default
+
+### Added
+
+- `enableExperimentalFeatures` extension for Kotlin JVM and Kotlin MP project scopes
+
 ## [1.16.0]
 
 ### Changed

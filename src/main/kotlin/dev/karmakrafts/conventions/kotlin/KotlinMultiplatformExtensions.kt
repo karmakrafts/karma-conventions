@@ -394,11 +394,6 @@ fun KotlinHierarchyBuilder.withAndroidLibrary() {
  */
 fun KotlinMultiplatformExtension.defaultCompilerOptions() {
     compilerOptions {
-        freeCompilerArgs.addAll(
-            "-Xexpect-actual-classes",  // Enable expect-actual classes
-            "-Xcontext-parameters",     // Enable context parameters
-            "-Xexplicit-backing-fields" // Enable explicit backing fields
-        )
         optIn.addAll(
             "kotlin.ExperimentalStdlibApi",
             "kotlin.ExperimentalUnsignedTypes",
@@ -408,6 +403,19 @@ fun KotlinMultiplatformExtension.defaultCompilerOptions() {
             "kotlin.io.encoding.ExperimentalEncodingApi",
             "kotlin.contracts.ExperimentalContracts",
             "kotlin.contracts.ExperimentalExtendedContracts"
+        )
+    }
+}
+
+/**
+ * Enables all experimental language features for the current Kotlin version.
+ */
+fun KotlinMultiplatformExtension.enableExperimentalFeatures() {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-Xexpect-actual-classes",  // Enable expect-actual classes
+            "-Xcontext-parameters",     // Enable context parameters
+            "-Xexplicit-backing-fields" // Enable explicit backing fields
         )
     }
 }

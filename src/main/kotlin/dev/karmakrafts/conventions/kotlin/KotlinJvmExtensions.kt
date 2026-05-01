@@ -24,11 +24,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
  */
 fun KotlinJvmProjectExtension.defaultCompilerOptions() {
     compilerOptions {
-        freeCompilerArgs.addAll(
-            "-Xexpect-actual-classes",  // Enable expect-actual classes
-            "-Xcontext-parameters",     // Enable context parameters
-            "-Xexplicit-backing-fields" // Enable explicit backing fields
-        )
         optIn.addAll(
             "kotlin.ExperimentalStdlibApi",
             "kotlin.ExperimentalUnsignedTypes",
@@ -38,6 +33,19 @@ fun KotlinJvmProjectExtension.defaultCompilerOptions() {
             "kotlin.io.encoding.ExperimentalEncodingApi",
             "kotlin.contracts.ExperimentalContracts",
             "kotlin.contracts.ExperimentalExtendedContracts"
+        )
+    }
+}
+
+/**
+ * Enables all experimental language features for the current Kotlin version.
+ */
+fun KotlinJvmProjectExtension.enableExperimentalFeatures() {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-Xexpect-actual-classes",  // Enable expect-actual classes
+            "-Xcontext-parameters",     // Enable context parameters
+            "-Xexplicit-backing-fields" // Enable explicit backing fields
         )
     }
 }
