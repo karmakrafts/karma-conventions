@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### Changed
+
+- Updated to Gradle 9.5.0
+- Updated to Kover 0.9.8
+- Updated to Kotlin 2.3.21
+- Updated to Dokka 2.2.0
+- Updated to Android Gradle 9.2.0
+- Updated to kotlinx.serialization 1.11.0
+
 ## [1.15.1]
 
 ### Changed
