@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.16.1]
+
 ### Changed
 
 - `defaultCompilerOptions` does not enable experimental features by default
