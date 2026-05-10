@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Changed
+
+- Updated to Android Gradle 9.2.1
+
 ## [1.16.1]
 
 ### Changed
