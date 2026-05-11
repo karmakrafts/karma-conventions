@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Changed
+
+- Replace `androidLibrary` KMP target extension with `android` for `withAndroidLibrary`
+
 ## [1.16.2]
 
 ### Changed

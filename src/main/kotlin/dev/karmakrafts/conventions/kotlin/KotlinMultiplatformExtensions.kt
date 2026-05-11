@@ -371,7 +371,7 @@ inline fun KotlinMultiplatformExtension.withAndroidLibrary(
     targetSdk: Provider<String> = compileSdk,
     crossinline config: KotlinMultiplatformAndroidLibraryTarget.() -> Unit = {}
 ) {
-    extensions.configure<KotlinMultiplatformAndroidLibraryTarget>("androidLibrary") {
+    extensions.configure<KotlinMultiplatformAndroidLibraryTarget>("android") {
         this.namespace = namespace
         this.compileSdk = compileSdk.get().toInt()
         this.minSdk = minSdk.get().toInt()
