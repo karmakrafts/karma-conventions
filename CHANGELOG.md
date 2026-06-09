@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.17.1]
+
 ### Added
 
 - Separate `compileVersion` and `targetVersion` parameters for `configureJava` function
