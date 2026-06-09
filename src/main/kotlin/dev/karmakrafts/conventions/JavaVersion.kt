@@ -21,10 +21,14 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 /**
  * Converts an integer Java version number to a JavaVersion enum value.
@@ -51,36 +55,47 @@ fun Int.toJavaVersion(): JavaVersion {
  * - Android Library plugin (source and target compatibility)
  * - Android Application plugin (source and target compatibility)
  *
- * @param version The Java version to configure (as an integer, e.g., 8, 11, 17)
+ * @param compileVersion The Java version to compile against (JDK version).
+ * @param targetVersion The Java version to produce bytecode for (classfile version).
  */
-fun Project.configureJava(version: Int) {
+fun Project.configureJava(compileVersion: Int, targetVersion: Int = compileVersion) {
     project.pluginManager.apply {
         if (hasPlugin(PluginIds.JAVA)) withPlugin(PluginIds.JAVA) {
             extensions.getByType<JavaPluginExtension>().apply {
                 toolchain {
-                    languageVersion.set(JavaLanguageVersion.of(version))
+                    languageVersion.set(JavaLanguageVersion.of(compileVersion))
                 }
-                val javaVersion = version.toJavaVersion()
-                sourceCompatibility = javaVersion
-                targetCompatibility = javaVersion
+            }
+            tasks.withType<JavaCompile> {
+                options.release.set(targetVersion)
             }
         }
         if (hasPlugin(PluginIds.KOTLIN_JVM)) withPlugin(PluginIds.KOTLIN_JVM) {
             logger.info("Found Kotlin JVM plugin, adjusting Java version")
             extensions.getByType(KotlinJvmExtension::class).apply {
-                jvmToolchain(version)
+                jvmToolchain(compileVersion)
+            }
+            tasks.withType<KotlinJvmCompile> {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.fromTarget(targetVersion.toString()))
+                }
             }
         }
         if (hasPlugin(PluginIds.KOTLIN_MP)) withPlugin(PluginIds.KOTLIN_MP) {
             logger.info("Found Kotlin Multiplatform plugin, adjusting Java version")
             extensions.getByType<KotlinMultiplatformExtension>().apply {
-                jvmToolchain(version)
+                jvmToolchain(compileVersion)
+            }
+            tasks.withType<KotlinJvmCompile> {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.fromTarget(targetVersion.toString()))
+                }
             }
         }
         if (hasPlugin(PluginIds.ANDROID_APP)) withPlugin(PluginIds.ANDROID_APP) {
             logger.info("Found Android Application plugin, adjusting Java version")
             extensions.getByType<ApplicationExtension>().compileOptions {
-                val javaVersion = version.toJavaVersion()
+                val javaVersion = compileVersion.toJavaVersion()
                 sourceCompatibility = javaVersion
                 targetCompatibility = javaVersion
             }
@@ -95,9 +110,10 @@ fun Project.configureJava(version: Int) {
  * the Java version number as a string. The string is converted to an integer
  * and passed to the main configureJava function.
  *
- * @param provider A provider for the Java version as a string
+ * @param compileVersion The Java version to compile against (JDK version).
+ * @param targetVersion The Java version to produce bytecode for (classfile version).
  * @see configureJava
  */
-fun Project.configureJava(provider: Provider<String>) {
-    configureJava(provider.get().toInt())
+fun Project.configureJava(compileVersion: Provider<String>, targetVersion: Provider<String> = compileVersion) {
+    configureJava(compileVersion.get().toInt(), targetVersion.get().toInt())
 }

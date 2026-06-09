@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- Separate `compileVersion` and `targetVersion` parameters for `configureJava` function
+
 ## [1.17.0]
 
 ### Changed
