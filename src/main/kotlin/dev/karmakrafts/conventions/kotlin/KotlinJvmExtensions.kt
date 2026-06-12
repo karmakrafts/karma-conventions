@@ -16,7 +16,6 @@
 
 package dev.karmakrafts.conventions.kotlin
 
-import org.jetbrains.kotlin.gradle.dsl.KotlinGradlePluginDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 /**

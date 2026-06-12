@@ -25,7 +25,6 @@ import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode
-import org.jetbrains.kotlin.gradle.dsl.KotlinGradlePluginDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinHierarchyBuilder
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
@@ -34,6 +33,7 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsBrowserDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsNodeDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsSubTargetDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmWasiTargetDsl
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
 /**
@@ -250,15 +250,29 @@ inline fun KotlinMultiplatformExtension.withJs(
 }
 
 /**
- * Adds the WebAssembly (Wasm) target to the multiplatform project.
+ * Adds the WebAssembly (Wasm) browser target to the multiplatform project.
  *
  * @param config The configuration to apply to the Wasm target.
  */
 @OptIn(ExperimentalWasmDsl::class)
-inline fun KotlinMultiplatformExtension.withWasm(
+inline fun KotlinMultiplatformExtension.withWasmJs(
     name: String = "wasmJs", crossinline config: KotlinJsTargetDsl.() -> Unit = {}
 ) {
     wasmJs(name) {
+        config()
+    }
+}
+
+/**
+ * Adds the WebAssembly (Wasm) WASI target to the multiplatform project.
+ *
+ * @param config The configuration to apply to the Wasm target.
+ */
+@OptIn(ExperimentalWasmDsl::class)
+inline fun KotlinMultiplatformExtension.withWasmWasi(
+    name: String = "wasmWasi", crossinline config: KotlinWasmWasiTargetDsl.() -> Unit = {}
+) {
+    wasmWasi(name) {
         config()
     }
 }
@@ -270,7 +284,7 @@ inline fun KotlinMultiplatformExtension.withWasm(
  */
 inline fun KotlinMultiplatformExtension.withWeb(crossinline config: KotlinJsTargetDsl.() -> Unit = {}) {
     withJs(config = config)
-    withWasm(config = config)
+    withWasmJs(config = config)
 }
 
 /**
@@ -413,9 +427,10 @@ fun KotlinMultiplatformExtension.defaultCompilerOptions() {
 fun KotlinMultiplatformExtension.enableExperimentalFeatures() {
     compilerOptions {
         freeCompilerArgs.addAll(
-            "-Xexpect-actual-classes",  // Enable expect-actual classes
-            "-Xcontext-parameters",     // Enable context parameters
-            "-Xexplicit-backing-fields" // Enable explicit backing fields
+            "-Xexpect-actual-classes",
+            "-Xcontext-parameters",
+            "-Xexplicit-backing-fields",
+            "-Xreturn-value-checker=check"
         )
     }
 }

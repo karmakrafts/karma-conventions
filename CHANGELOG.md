@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### Added
+
+- `withWasmWasi` KMP target extension
+
+### Changed
+
+- `withWasm` KMP target extension renamed to `withWasmJs`
+- Enable unused return value checker in `defaultCompilerOptions` extensions
+
 ## [1.17.1]
 
 ### Added

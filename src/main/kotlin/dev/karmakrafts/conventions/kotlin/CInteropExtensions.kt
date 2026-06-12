@@ -19,7 +19,6 @@ package dev.karmakrafts.conventions.kotlin
 import dev.karmakrafts.conventions.GitLabPackage
 import dev.karmakrafts.conventions.GitLabPackageArtifact
 import org.gradle.internal.extensions.stdlib.capitalized
-import org.jetbrains.kotlin.gradle.plugin.KotlinTargetsDsl
 import org.jetbrains.kotlin.gradle.plugin.mpp.DefaultCInteropSettings
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
