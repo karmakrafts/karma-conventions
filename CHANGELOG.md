@@ -3,6 +3,7 @@
 ### Added
 
 - `withWasmWasi` KMP target extension
+- `withNodeJs` WASM WASI runtime extension
 
 ### Changed
 

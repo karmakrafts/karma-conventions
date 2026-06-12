@@ -264,6 +264,17 @@ inline fun KotlinMultiplatformExtension.withWasmJs(
 }
 
 /**
+ * Adds Node.js support to a WASI target.
+ *
+ * @param config The configuration to apply to the Node.js sub-target.
+ */
+inline fun KotlinWasmWasiTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDsl.() -> Unit = {}) {
+    nodejs {
+        config()
+    }
+}
+
+/**
  * Adds the WebAssembly (Wasm) WASI target to the multiplatform project.
  *
  * @param config The configuration to apply to the Wasm target.
