@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.18.0]
+
 ### Added
 
 - `withWasmWasi` KMP target extension
