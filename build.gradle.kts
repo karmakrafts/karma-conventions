@@ -29,7 +29,6 @@ import kotlin.io.path.writeText
 plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.gradleNexus)
     `kotlin-dsl`
     `maven-publish`
     signing
@@ -123,7 +122,7 @@ dependencies {
     compileOnly(libs.plugins.kotlinx.kover.asLibrary())
     compileOnly(libs.plugins.android.library.asLibrary())
     compileOnly(libs.plugins.android.application.asLibrary())
-    compileOnly(libs.plugins.gradleNexus.asLibrary())
+    compileOnly(libs.plugins.nmcp.asLibrary())
     compileOnly(libs.plugins.dokka.asLibrary())
 }
 
@@ -178,19 +177,6 @@ dokka {
                     url.set(uri("https://developer.android.com/reference/tools/gradle-api/$version/"))
                     packageListUrl.set(uri("https://developer.android.com/reference/tools/gradle-api/$version/package-list"))
                 }
-            }
-        }
-    }
-}
-
-nexusPublishing {
-    repositories {
-        System.getenv("OSSRH_USERNAME")?.let { userName ->
-            sonatype {
-                nexusUrl = URI.create("https://ossrh-staging-api.central.sonatype.com/service/local/")
-                snapshotRepositoryUrl = URI.create("https://central.sonatype.com/repository/maven-snapshots/")
-                username = userName
-                password = System.getenv("OSSRH_PASSWORD")
             }
         }
     }

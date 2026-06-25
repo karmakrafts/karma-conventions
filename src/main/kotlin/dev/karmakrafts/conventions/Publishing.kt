@@ -16,13 +16,11 @@
 
 package dev.karmakrafts.conventions
 
-import io.github.gradlenexus.publishplugin.NexusPublishExtension
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPomLicenseSpec
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.withType
-import java.net.URI
 
 /**
  * Configures the Maven POM with Karma Krafts organization information.
@@ -260,40 +258,6 @@ fun PublishingExtension.setProjectInfo( // @formatter:off
             this.name.set(name)
             this.description.set(description)
             this.url.set(url)
-        }
-    }
-}
-
-/**
- * Configures authenticated access to Sonatype Maven Central repository.
- *
- * This extension function sets up the Sonatype repository with authentication credentials
- * retrieved from environment variables. It configures both the main repository URL and
- * the snapshot repository URL.
- *
- * The function requires the following environment variables to be set:
- * - OSSRH_USERNAME: The username for Sonatype OSSRH authentication
- * - OSSRH_PASSWORD: The password for Sonatype OSSRH authentication
- *
- * If the OSSRH_USERNAME environment variable is not set, the Sonatype repository
- * will not be configured.
- *
- * Example usage:
- * ```kotlin
- * nexusPublishing {
- *     authenticatedSonatype()
- * }
- * ```
- */
-fun NexusPublishExtension.authenticatedSonatype() {
-    repositories {
-        System.getenv("OSSRH_USERNAME")?.let { userName ->
-            sonatype {
-                nexusUrl.set(URI.create("https://ossrh-staging-api.central.sonatype.com/service/local/"))
-                snapshotRepositoryUrl.set(URI.create("https://central.sonatype.com/repository/maven-snapshots/"))
-                username.set(userName)
-                password.set(System.getenv("OSSRH_PASSWORD"))
-            }
         }
     }
 }

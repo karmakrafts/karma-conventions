@@ -1,3 +1,5 @@
+import java.time.Duration
+
 /*
  * Copyright 2026 Karma Krafts
  *
@@ -24,8 +26,7 @@ pluginManagement {
     }
 }
 
-@Suppress("UnstableApiUsage")
-dependencyResolutionManagement {
+@Suppress("UnstableApiUsage") dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
@@ -35,4 +36,15 @@ dependencyResolutionManagement {
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver") version "1.0.0"
+    id("com.gradleup.nmcp.settings") version "1.6.0"
+}
+
+nmcpSettings {
+    System.getenv("OSSRH_USERNAME")?.let { username ->
+        centralPortal {
+            this.username = username
+            password = System.getenv("OSSRH_PASSWORD")
+            validationTimeout = Duration.ofMinutes(30)
+        }
+    }
 }
