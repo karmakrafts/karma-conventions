@@ -126,7 +126,7 @@ publish:snapshot:maven:
   rules:
     - *if-main
   script:
-    - ./gradlew publishAllPublicationsToGitLabRepository publishAllPublicationsToCentralSnapshots
+    - ./gradlew publishAllPublicationsToGitLabRepository publishAggregationToCentralSnapshots
   tags:
     - macos
 
@@ -135,7 +135,7 @@ publish:release:maven:
   rules:
     - *if-release
   script:
-    - ./gradlew publishAllPublicationsToGitLabRepository publishAllPublicationsToCentralPortal
+    - ./gradlew publishAllPublicationsToGitLabRepository publishAggregationToCentralPortal
   tags:
     - macos
 

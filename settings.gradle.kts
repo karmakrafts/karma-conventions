@@ -40,11 +40,9 @@ plugins {
 }
 
 nmcpSettings {
-    System.getenv("OSSRH_USERNAME")?.let { username ->
-        centralPortal {
-            this.username = username
-            password = System.getenv("OSSRH_PASSWORD")
-            validationTimeout = Duration.ofMinutes(30)
-        }
+    centralPortal {
+        this.username = providers.environmentVariable("OSSRH_USERNAME").get()
+        password = providers.environmentVariable("OSSRH_PASSWORD").get()
+        validationTimeout = Duration.ofMinutes(30)
     }
 }
