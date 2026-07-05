@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Changed
+
+- Updated to Gradle 9.6.1
+- Updated to NMCP 1.6.1
+
 ## [1.18.1]
 
 ### Changed
