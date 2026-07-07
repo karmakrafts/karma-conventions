@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.18.3]
+
 ### Changed
 
 - Updated CI configuration to use new bot identities
