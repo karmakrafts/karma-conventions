@@ -435,6 +435,7 @@ fun KotlinMultiplatformExtension.defaultCompilerOptions() {
 /**
  * Enables all experimental language features for the current Kotlin version.
  */
+@Deprecated("Use compilerOptions directly for experimental features")
 fun KotlinMultiplatformExtension.enableExperimentalFeatures() {
     compilerOptions {
         freeCompilerArgs.addAll(

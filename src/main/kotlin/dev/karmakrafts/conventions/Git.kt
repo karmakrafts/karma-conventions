@@ -58,6 +58,7 @@ class GitRepository internal constructor( // @formatter:off
      */
     val cloneTask: TaskProvider<Exec> = project.tasks.register<Exec>("clone${name.replace("-", "").capitalized()}") {
         group = this@GitRepository.group
+        description = "Clone the associated Git repository"
         dependsOn(project.tasks.ensureBuildDirectory())
         workingDir = project.layout.buildDirectory.file
         commandLine(tag?.let {
@@ -75,6 +76,7 @@ class GitRepository internal constructor( // @formatter:off
      */
     val pullTask: TaskProvider<Exec> = project.tasks.register<Exec>("pull${name.replace("-", "").capitalized()}") {
         group = this@GitRepository.group
+        description = "Update the associated Git repository by force-pulling"
         dependsOn(cloneTask)
         workingDir = localPath.toFile()
         commandLine("git", "pull", "--force")

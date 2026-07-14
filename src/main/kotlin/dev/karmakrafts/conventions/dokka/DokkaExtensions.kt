@@ -36,6 +36,7 @@ import kotlin.io.path.div
 internal fun Project.registerDefaultDokkaJar(publishDocs: Boolean) {
     val dokkaHtmlJar = tasks.register("dokkaHtmlJar", Jar::class) { // @formatter:off
         group = "dokka"
+        description = "Creates a JAR with the generated Dokka HTML documentation for uploading"
         archiveClassifier.set("javadoc")
         // @formatter:off
         from(tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
@@ -44,6 +45,8 @@ internal fun Project.registerDefaultDokkaJar(publishDocs: Boolean) {
     } // @formatter:on
     if (publishDocs) System.getProperty("publishDocs.root")?.let { docsDir ->
         tasks.register("publishDocs", Copy::class) {
+            group = "publishing"
+            description = "Copies the generated documentation to the specified webroot"
             dependsOn(dokkaHtmlJar)
             mustRunAfter(dokkaHtmlJar)
             from(zipTree(dokkaHtmlJar.map { task -> task.outputs.files.first() }))
@@ -58,6 +61,7 @@ internal fun Project.registerPublicationDokkaJars() {
         publications.withType<MavenPublication> publication@{
             val dokkaJar = tasks.register("${name}DokkaJar", Jar::class) {
                 group = "dokka"
+                description = "Create a javadoc-type JAR with the documentation for the associated module"
                 archiveClassifier.set("javadoc")
                 // Each archive name should be distinct, to avoid implicit dependency issues.
                 // We use the same format as the sources Jar tasks.

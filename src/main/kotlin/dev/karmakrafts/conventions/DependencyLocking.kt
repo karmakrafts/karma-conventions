@@ -40,5 +40,8 @@ fun Project.defaultDependencyLocking() {
     dependencyLocking {
         lockAllConfigurations()
     }
-    tasks.register<DependencyReportTask>("dependenciesForAll")
+    tasks.register<DependencyReportTask>("dependenciesForAll") {
+        group = "other"
+        description = "Report dependencies for all modules"
+    }
 }

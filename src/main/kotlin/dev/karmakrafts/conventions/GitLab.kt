@@ -346,6 +346,7 @@ class GitLabPackageArtifact internal constructor(
     val downloadTask: TaskProvider<Task> =
         project.tasks.register("download${projectName.capitalized()}${suffix.capitalized()}") {
             group = projectName
+            description = "Downloads the associated artifact to the local filesystem"
             outputs.file(localPath.toFile())
             val packageUrl = this@GitLabPackageArtifact.packageUrl
             val fileName = this@GitLabPackageArtifact.fileName
@@ -394,6 +395,7 @@ class GitLabPackageArtifact internal constructor(
     ) {
         dependsOn("download${projectName.capitalized()}${suffix.capitalized()}")
         group = projectName
+        description = "Extracts the associated artifact into a temporary directory"
         from(project.zipTree(localPath.toFile()))
         into(outputDirectoryPath.toFile())
         doLast { logger.lifecycle("Extracted ${outputs.files.joinToString()}") }
@@ -406,6 +408,8 @@ class GitLabPackageArtifact internal constructor(
      */
     val cleanTask: TaskProvider<Task> =
         project.tasks.register("clean${projectName.capitalized()}${suffix.capitalized()}") {
+            group = projectName
+            description = "Deletes the associated artifact from the local filesystem"
             inputs.file(localPath.toFile())
             doFirst {
                 val path = inputs.files.first().toPath()

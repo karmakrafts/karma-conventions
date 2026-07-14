@@ -59,7 +59,9 @@ java {
 
 tasks {
     val versionString = rootProject.version.toString()
-    val createVersionFile by registering {
+    val createVersionFile = register("createVersionFile") {
+        group = "other"
+        description = "Create a karma-conventions.version file to include in the finished plugin JAR"
         outputs.file(layout.buildDirectory.asFile.map { file -> (file.toPath() / "generated" / "karma-conventions.version").toFile() })
         outputs.upToDateWhen { false } // Always re-generate this file
         doFirst {
@@ -71,25 +73,28 @@ tasks {
     }
     processResources { dependsOn(createVersionFile) }
     compileKotlin { dependsOn(processResources) }
-    @Suppress("UNUSED") val sourcesJar by getting {
+    named("sourcesJar") {
         dependsOn(compileJava)
         dependsOn(compileTestJava)
     }
-    val javadocJar by getting(Jar::class) {
+    val javadocJar = named<Jar>("javadocJar") {
         dependsOn(dokkaGeneratePublicationHtml)
         from(dokkaGeneratePublicationHtml)
     }
     System.getProperty("publishDocs.root")?.let { docsDir ->
-        register("publishDocs", Copy::class) {
+        register<Copy>("publishDocs") {
+            group = "publishing"
+            description = "Copies the generated documentation to the specified webroot"
             dependsOn(javadocJar)
             mustRunAfter(javadocJar)
-            from(zipTree(javadocJar.outputs.files.first()))
+            from(zipTree(javadocJar.map { task -> task.outputs.files.singleFile }))
             into(docsDir)
         }
     }
     // We need to patch KGPs package-list since they change module names for aesthetic reasons -.-
-    val dokkaPatchKgpPackageList by registering {
+    val dokkaPatchKgpPackageList = register("dokkaPatchKgpPackageList") {
         group = "dokka"
+        description = "Patch broken KGP package-list file"
         outputs.file(layout.buildDirectory.asFile.map { file ->
             (file.toPath() / "docs" / "kgp" / "package-list").toFile()
         })
@@ -141,7 +146,10 @@ System.getenv("CI_PROJECT_ID")?.let {
         lockAllConfigurations()
     }
     tasks {
-        @Suppress("UNUSED") val dependenciesForAll by registering(DependencyReportTask::class)
+        register<DependencyReportTask>("dependenciesForAll") {
+            group = "other"
+            description = "Report dependencies for all modules"
+        }
     }
 }
 

@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+### Changed
+
+- Updated to Kotlin 2.4.10
+- Updated to AGP 9.3.0
+- Added groups to all Gradle tasks in build & APIs
+- Added descriptions to all Gradle tasks in build & APIs
+- Migrate from delegate properties to explicit calls for task container access
+
 ## [1.18.3]
 
 ### Changed
