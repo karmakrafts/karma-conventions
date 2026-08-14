@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+### Changed
+
+- Updated to Gradle 9.7.0
+- Updated to AGP 9.3.1
+- Updated to Kover 0.9.9
+
 ## [1.19.0]
 
 ### Changed
