@@ -3,6 +3,10 @@
 ### Changed
 
 - Updated to Gradle 9.8.1
+- Updated to Kotlin 2.4.21
+- Updated to AGP 9.4.1
+- Updated to Kover 0.9.11
+- Updated to NMCP 1.6.2
 
 ## [1.20.0]
 
