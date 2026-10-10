@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-import org.jetbrains.dokka.gradle.tasks.DokkaGenerateTask
 import java.net.URI
-import java.nio.file.StandardOpenOption
 import java.time.ZonedDateTime
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.io.path.createDirectories
-import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.writeText
@@ -91,28 +88,6 @@ tasks {
             into(docsDir)
         }
     }
-    // We need to patch KGPs package-list since they change module names for aesthetic reasons -.-
-    val dokkaPatchKgpPackageList = register("dokkaPatchKgpPackageList") {
-        group = "dokka"
-        description = "Patch broken KGP package-list file"
-        outputs.file(layout.buildDirectory.asFile.map { file ->
-            (file.toPath() / "docs" / "kgp" / "package-list").toFile()
-        })
-        doFirst {
-            val outputPath = outputs.files.first().toPath()
-            outputPath.createParentDirectories()
-            URI.create("https://kotlinlang.org/api/kotlin-gradle-plugin/package-list").toURL().openStream().bufferedReader().use { reader -> // @formatter:off
-                outputPath.writeText(reader.readText()
-                        .replace("module:The Kotlin Gradle plugins API", "module:kotlin-gradle-plugin-api")
-                        .replace("module:The Compose compiler Gradle plugin", "module:compose-compiler-gradle-plugin"),
-                        Charsets.UTF_8,
-                        StandardOpenOption.CREATE)
-                } // @formatter:on
-        }
-    }
-    withType<DokkaGenerateTask>().configureEach {
-        dependsOn(dokkaPatchKgpPackageList)
-    }
 }
 
 fun Provider<PluginDependency>.asLibrary(): Provider<String> {
@@ -175,10 +150,8 @@ dokka {
                     packageListUrl.set(uri("https://docs.gradle.org/$version/javadoc/element-list"))
                 }
                 register("kotlinGradle") {
-                    url.set(uri("https://kotlinlang.org/api/kotlin-gradle-plugin/"))
-                    packageListUrl.set(layout.buildDirectory.asFile.map { file ->
-                        (file.toPath() / "docs" / "kgp" / "package-list").toUri()
-                    })
+                    url.set(uri("https://kotlinlang.org/api/kotlin-gradle-plugin"))
+                    packageListUrl.set(uri("https://kotlinlang.org/api/kotlin-gradle-plugin/package-list"))
                 }
                 register("androidGradle") {
                     val version = libs.versions.android.gradle.get().substringBeforeLast('.')
