@@ -298,13 +298,10 @@ inline fun KotlinMultiplatformExtension.withWeb(crossinline config: KotlinJsTarg
     withWasmJs(config = config)
 }
 
-/**
- * Configures the default browser settings, specifically using Firefox Headless for Karma tests.
- */
 fun KotlinJsSubTargetDsl.defaultBrowserConfig() {
     testTask {
         useKarma {
-            useFirefoxHeadless()
+            useChromeHeadless()
         }
     }
 }
