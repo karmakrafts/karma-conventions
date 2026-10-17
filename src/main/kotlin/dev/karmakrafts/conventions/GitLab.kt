@@ -33,9 +33,12 @@ import org.gradle.authentication.http.HttpHeaderAuthentication
 import org.gradle.internal.extensions.stdlib.capitalized
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.credentials
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.maven
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -43,12 +46,15 @@ import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.concurrent.atomics.AtomicBoolean
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
+import kotlin.io.path.isDirectory
 import kotlin.io.path.outputStream
 
 /**
@@ -172,11 +178,12 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
         private const val PACKAGE_FILE_COUNT: Int = 100
     }
 
-    val packages: List<GitLabAPI.Package> by lazy { fetch(endpoint) ?: emptyList() }
+    val packageInfo: List<GitLabAPI.Package> by lazy { fetch(endpoint) ?: emptyList() }
     private val packageFiles: ConcurrentHashMap<String, List<GitLabAPI.PackageFile>> = ConcurrentHashMap()
+    private val packages: ConcurrentHashMap<String, GitLabPackage> = ConcurrentHashMap()
 
     fun findPackageId(name: String, version: String): Long? {
-        return packages.find { it.name == name && it.version == version }?.id
+        return packageInfo.find { it.name == name && it.version == version }?.id
     }
 
     fun findPackageId(name: String, version: Provider<String>): Long? = findPackageId(name, version.get())
@@ -198,7 +205,7 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
      * @param path The path of the package
      * @return A GitLabPackage instance representing the specified package
      */
-    operator fun get(path: String): GitLabPackage {
+    operator fun get(path: String): GitLabPackage = packages.getOrPut(path) {
         return GitLabPackage(this, "$endpoint/$path", path, "")
     }
 
@@ -209,7 +216,7 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
      * @param version The version of the package
      * @return A GitLabPackage instance representing the specified package version
      */
-    operator fun get(path: String, version: String): GitLabPackage {
+    operator fun get(path: String, version: String): GitLabPackage = packages.getOrPut("$path:$version") {
         return GitLabPackage(this, "$endpoint/$path/$version", path, version)
     }
 
@@ -220,10 +227,11 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
      * @param version A provider for the version of the package
      * @return A GitLabPackage instance representing the specified package version
      */
-    operator fun get(path: String, version: Provider<String>): GitLabPackage {
-        val versionString = version.get()
-        return GitLabPackage(this, "$endpoint/$path/${versionString}", path, versionString)
-    }
+    operator fun get(path: String, version: Provider<String>): GitLabPackage =
+        packages.getOrPut("$path:${version.get()}") {
+            val versionString = version.get()
+            return GitLabPackage(this, "$endpoint/$path/${versionString}", path, versionString)
+        }
 }
 
 /**
@@ -258,7 +266,7 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
  * @property packageRegistry The GitLab package registry this package belongs to
  * @property url The URL of this package
  */
-class GitLabPackage internal constructor( // @formatter:off
+@OptIn(ExperimentalAtomicApi::class)class GitLabPackage internal constructor( // @formatter:off
     val packageRegistry: GitLabPackageRegistry,
     val url: String,
     val path: String,
@@ -274,9 +282,11 @@ class GitLabPackage internal constructor( // @formatter:off
      * @param directoryName The directory name for the artifact (defaults to the project name)
      * @return A GitLabPackageArtifact instance representing the specified artifact
      */
-    operator fun get(
-        fileName: String, suffix: String = "", directoryName: String = packageRegistry.project.name
-    ): GitLabPackageArtifact = artifacts.getOrPut("$suffix:$directoryName/$fileName") {
+    operator fun get( // @formatter:off
+        fileName: String,
+        suffix: String = "",
+        directoryName: String = packageRegistry.project.name
+    ): GitLabPackageArtifact = artifacts.getOrPut("$suffix:$directoryName/$fileName") { // @formatter:on
         GitLabPackageArtifact(this, url, fileName, suffix, directoryName)
     }
 
@@ -288,10 +298,128 @@ class GitLabPackage internal constructor( // @formatter:off
      * @param directoryName The directory name for the artifact (defaults to the project name)
      * @return A GitLabPackageArtifact instance representing the specified artifact
      */
-    operator fun get(
-        fileName: Provider<String>, suffix: String = "", directoryName: String = packageRegistry.project.name
-    ): GitLabPackageArtifact = artifacts.getOrPut("$suffix:$directoryName/${fileName.get()}") {
+    operator fun get( // @formatter:off
+        fileName: Provider<String>,
+        suffix: String = "",
+        directoryName: String = packageRegistry.project.name
+    ): GitLabPackageArtifact = artifacts.getOrPut("$suffix:$directoryName/${fileName.get()}") { // @formatter:on
         GitLabPackageArtifact(this, url, fileName.get(), suffix, directoryName)
+    }
+
+    private val hasJvmJniLibraryResourceRoot: AtomicBoolean = AtomicBoolean(false)
+
+    private val defaultJvmJniPlatforms: List<Pair<String, String>> = listOf( // @formatter:off
+        "windows-amd64" to "windowsAmd64",
+        "linux-amd64" to "linuxAmd64",
+        "linux-arm64" to "linuxArm64",
+        "macos-arm64" to "macosArm64"
+    ) // @formatter:on
+
+    private val defaultAndroidJniPlatforms: List<Triple<String, String, String>> = listOf( // @formatter:off
+        Triple("android-amd64", "androidAmd64", "x86_64"),
+        Triple("android-arm64", "androidArm64", "arm64-v8a"),
+        Triple("android-arm32", "androidArm32", "armeabi-v7a")
+    ) // @formatter:on
+
+    private fun registerJvmJniLibraryResourceRoot() {
+        // This needs to handle both Kotlin/JVM and KMP being used in the given project
+        if (!hasJvmJniLibraryResourceRoot.compareAndSet(expectedValue = false, newValue = true)) return
+        val project = packageRegistry.project.server.projectGetter()
+        val pluginManager = project.pluginManager
+        when {
+            pluginManager.hasPlugin(PluginIds.KOTLIN_MP) -> pluginManager.withPlugin(PluginIds.KOTLIN_MP) {
+                val extension = project.extensions.getByType<KotlinMultiplatformExtension>()
+                extension.sourceSets.named("jvmMain") { // The default JVM KMP source set
+                    resources.srcDir(project.layout.buildDirectory.dir("generatedJniResources"))
+                }
+            }
+
+            pluginManager.hasPlugin(PluginIds.KOTLIN_JVM) -> pluginManager.withPlugin(PluginIds.KOTLIN_JVM) {
+                val extension = project.extensions.getByType<KotlinJvmProjectExtension>()
+                extension.sourceSets.named("main") { // The default JVM source set
+                    resources.srcDir(project.layout.buildDirectory.dir("generatedJniResources"))
+                }
+            }
+        }
+    }
+
+    private fun getDefaultJniPlatformBinaries(name: String): Map<String, String> = mapOf(
+        "windows-amd64" to "lib$name.dll",
+        "linux-amd64" to "lib$name.so",
+        "linux-arm64" to "lib$name.so",
+        "macos-arm64" to "lib$name.dylib",
+        "android-amd64" to "lib$name.so",
+        "android-arm64" to "lib$name.so",
+        "android-arm32" to "lib$name.so"
+    )
+
+    private fun Task.defaultCopyJniLibrariesCondition() {
+        onlyIf {
+            val inputPath = inputs.files.singleFile.toPath()
+            if (inputPath.isDirectory()) return@onlyIf true // For entire directories, we cannot checksum the input
+            val outputPath = outputs.files.singleFile.toPath()
+            // The output may be a directory, so map the path accordingly
+            val outputFilePath = when {
+                outputPath.isDirectory() -> outputPath / inputPath.fileName
+                else -> outputPath
+            }
+            val currentChecksum = outputFilePath.checksum() ?: return@onlyIf true
+            logger.lifecycle("Current checksum is $currentChecksum")
+            val expectedChecksum = inputPath.checksum() ?: return@onlyIf true
+            logger.lifecycle("Expected checksum is $expectedChecksum")
+            currentChecksum != expectedChecksum
+        }
+    }
+
+    fun registerCopyJvmJniLibraryTasks(
+        taskPrefix: String,
+        baseBinaryName: String,
+        binaryNames: Map<String, String> = getDefaultJniPlatformBinaries(baseBinaryName),
+        platforms: List<Pair<String, String>> = defaultJvmJniPlatforms
+    ): List<TaskProvider<Copy>> = with(packageRegistry.project.server.projectGetter().tasks) {
+        registerJvmJniLibraryResourceRoot()
+        val tasks = ArrayList<TaskProvider<Copy>>()
+        for ((name, suffix) in platforms) {
+            val platformArtifact = this@GitLabPackage["build-$name-release.zip", suffix]
+            val copyTask = register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
+                description = "Extracts required JNI natives to the resource root of the JVM"
+                group = "jnilibs"
+                dependsOn(platformArtifact.extractTask)
+                from((platformArtifact.outputDirectoryPath / binaryNames[name]!!).toFile())
+                into(project.layout.buildDirectory.dir("generatedJniResources/natives/$name"))
+                defaultCopyJniLibrariesCondition()
+            }
+            // The files should be copied when the project is built AND when a Gradle sync in IDEA happens
+            named("prepareKotlinIdeaImport") { dependsOn(copyTask) }
+            named("assemble") { dependsOn(copyTask) }
+            tasks += copyTask
+        }
+        return tasks
+    }
+
+    fun registerCopyAndroidJniLibraryTasks(
+        taskPrefix: String,
+        baseBinaryName: String,
+        binaryNames: Map<String, String> = getDefaultJniPlatformBinaries(baseBinaryName),
+        platforms: List<Triple<String, String, String>> = defaultAndroidJniPlatforms
+    ): List<TaskProvider<Copy>> = with(packageRegistry.project.server.projectGetter().tasks) {
+        val tasks = ArrayList<TaskProvider<Copy>>()
+        for ((name, suffix, jniTarget) in platforms) {
+            val platformArtifact = this@GitLabPackage["build-$name-release.zip", suffix]
+            val copyTask = register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
+                description = "Extracts required JNI natives to the resource root of Android"
+                group = "jnilibs"
+                dependsOn(platformArtifact.extractTask)
+                from((platformArtifact.outputDirectoryPath / binaryNames[name]!!).toFile())
+                into("src/androidMain/jniLibs/$jniTarget")
+                defaultCopyJniLibrariesCondition()
+            }
+            // The files should be copied when the project is built AND when a Gradle sync in IDEA happens
+            named("prepareKotlinIdeaImport") { dependsOn(copyTask) }
+            named("assemble") { dependsOn(copyTask) }
+            tasks += copyTask
+        }
+        return tasks
     }
 }
 
@@ -338,51 +466,58 @@ class GitLabPackageArtifact internal constructor(
     val outputDirectoryPath: Path = if (suffix.isBlank()) localDirectoryPath
     else localDirectoryPath / suffix
 
+    private fun getTaskName(prefix: String): String {
+        val builder = StringBuilder()
+        builder.append(prefix)
+        builder.append(projectName.capitalized())
+        builder.append(suffix.capitalized())
+        return builder.toString()
+    }
+
     /**
      * Gradle task that downloads the artifact if it doesn't exist locally.
      *
      * This task will only execute if the artifact hasn't been downloaded yet.
      */
-    val downloadTask: TaskProvider<Task> =
-        project.tasks.register("download${projectName.capitalized()}${suffix.capitalized()}") {
-            group = projectName
-            description = "Downloads the associated artifact to the local filesystem"
-            outputs.file(localPath.toFile())
-            val packageUrl = this@GitLabPackageArtifact.packageUrl
-            val fileName = this@GitLabPackageArtifact.fileName
-            doLast {
-                val filePath = outputs.files.first().toPath()
-                val url = "$packageUrl/$fileName"
-                logger.lifecycle("Downloading $url..")
-                filePath.deleteIfExists()
-                filePath.createParentDirectories()
-                fetchRaw(url)?.use { Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING) }
-                logger.lifecycle("Downloaded $filePath")
-            }
-            val path = packageInstance.path
-            val name = if (path.startsWith("generic/")) path.substringAfter("generic/") else path
-            val packageFiles = packageInstance.packageRegistry.getPackageFiles(name, packageInstance.version)
-            onlyIf {
-                val filePath = outputs.files.first()
-                try {
-                    val packageFile = packageFiles.find { it.fileName == fileName }
-                    val hashDigest = packageFile?.hashType?.createDigest()
-                    val remoteHash = packageFile?.hash
-                    val localHash = if (filePath.exists() && hashDigest != null) {
-                        hashDigest.digest(filePath.readBytes()).joinToString("") { "%02x".format(it) }
-                    }
-                    else null
-                    if (localHash == null) return@onlyIf true
-                    logger.lifecycle("Got local hash sum $localHash")
-                    if (remoteHash == null) return@onlyIf false
-                    logger.lifecycle("Got remote hash sum $remoteHash")
-                    remoteHash != localHash
-                } catch (_: Throwable) {
-                    logger.lifecycle("Could not compare hashes, we are likely offline so skip download")
-                    false
+    val downloadTask: TaskProvider<Task> = project.tasks.maybeRegister(getTaskName("download")) {
+        group = projectName
+        description = "Downloads the associated artifact to the local filesystem"
+        outputs.file(localPath.toFile())
+        val packageUrl = this@GitLabPackageArtifact.packageUrl
+        val fileName = this@GitLabPackageArtifact.fileName
+        doLast {
+            val filePath = outputs.files.first().toPath()
+            val url = "$packageUrl/$fileName"
+            logger.lifecycle("Downloading $url..")
+            filePath.deleteIfExists()
+            filePath.createParentDirectories()
+            fetchRaw(url)?.use { Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING) }
+            logger.lifecycle("Downloaded $filePath")
+        }
+        val path = packageInstance.path
+        val name = if (path.startsWith("generic/")) path.substringAfter("generic/") else path
+        val packageFiles = packageInstance.packageRegistry.getPackageFiles(name, packageInstance.version)
+        onlyIf {
+            val filePath = outputs.files.first()
+            try {
+                val packageFile = packageFiles.find { it.fileName == fileName }
+                val hashDigest = packageFile?.hashType?.createDigest()
+                val remoteHash = packageFile?.hash
+                val localHash = if (filePath.exists() && hashDigest != null) {
+                    hashDigest.digest(filePath.readBytes()).joinToString("") { "%02x".format(it) }
                 }
+                else null
+                if (localHash == null) return@onlyIf true
+                logger.lifecycle("Got local hash sum $localHash")
+                if (remoteHash == null) return@onlyIf false
+                logger.lifecycle("Got remote hash sum $remoteHash")
+                remoteHash != localHash
+            } catch (_: Throwable) {
+                logger.lifecycle("Could not compare hashes, we are likely offline so skip download")
+                false
             }
         }
+    }
 
     /**
      * Gradle task that extracts the downloaded artifact.
@@ -390,10 +525,8 @@ class GitLabPackageArtifact internal constructor(
      * This task depends on the download task and will extract the artifact
      * to the output directory path.
      */
-    val extractTask: TaskProvider<Copy> = project.tasks.register<Copy>(
-        "extract${projectName.capitalized()}${suffix.capitalized()}"
-    ) {
-        dependsOn("download${projectName.capitalized()}${suffix.capitalized()}")
+    val extractTask: TaskProvider<Copy> = project.tasks.maybeRegister<Copy>(getTaskName("extract")) {
+        dependsOn(getTaskName("download"))
         group = projectName
         description = "Extracts the associated artifact into a temporary directory"
         from(project.zipTree(localPath.toFile()))
@@ -406,17 +539,16 @@ class GitLabPackageArtifact internal constructor(
      *
      * This task can be used to clean up the downloaded artifact file.
      */
-    val cleanTask: TaskProvider<Task> =
-        project.tasks.register("clean${projectName.capitalized()}${suffix.capitalized()}") {
-            group = projectName
-            description = "Deletes the associated artifact from the local filesystem"
-            inputs.file(localPath.toFile())
-            doFirst {
-                val path = inputs.files.first().toPath()
-                path.deleteIfExists()
-                logger.lifecycle("Removed $path")
-            }
+    val cleanTask: TaskProvider<Task> = project.tasks.maybeRegister(getTaskName("clean")) {
+        group = projectName
+        description = "Deletes the associated artifact from the local filesystem"
+        inputs.file(localPath.toFile())
+        doFirst {
+            val path = inputs.files.first().toPath()
+            path.deleteIfExists()
+            logger.lifecycle("Removed $path")
         }
+    }
 }
 
 /**

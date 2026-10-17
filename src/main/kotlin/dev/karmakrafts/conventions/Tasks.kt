@@ -18,8 +18,22 @@ package dev.karmakrafts.conventions
 
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.TaskProvider
 import kotlin.io.path.createDirectories
 import kotlin.io.path.notExists
+
+/**
+ * Lazily register the task if it doesn't exist yet, otherwise
+ * return the existing task matching the given name and type.
+ */
+inline fun <reified T : Task> TaskContainer.maybeRegister(
+    name: String, crossinline configureAction: T.() -> Unit = {}
+): TaskProvider<T> = when {
+    named { it == name }.isNotEmpty() -> named(name, T::class.java)
+    else -> register(name, T::class.java) {
+        configureAction()
+    }
+}
 
 /**
  * Creates a task that ensures the build directory exists.

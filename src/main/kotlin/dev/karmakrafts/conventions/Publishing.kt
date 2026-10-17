@@ -58,6 +58,41 @@ fun MavenPom.karmaKraftsOrganization() {
 }
 
 /**
+ * Configures the Maven POM with Karma Labs organization information.
+ *
+ * This extension function sets up the organization and developers sections
+ * of a Maven POM with standard Karma Labs information.
+ *
+ * Example usage:
+ * ```kotlin
+ * publishing {
+ *     publications {
+ *         withType<MavenPublication> {
+ *             pom {
+ *                 karmaLabsOrganization()
+ *             }
+ *         }
+ *     }
+ * }
+ * ```
+ */
+fun MavenPom.karmaLabsOrganization() {
+    organization {
+        name.set("Karma Labs")
+        url.set("https://git.karmakrafts.dev/karma-labs")
+    }
+    developers {
+        developer {
+            id.set("karmalabs")
+            name.set("Karma Labs")
+            url.set("https://git.karmakrafts.dev/karma-labs")
+            organization.set("Karma Labs")
+            organizationUrl.set("https://git.karmakrafts.dev/karma-labs")
+        }
+    }
+}
+
+/**
  * Configures the Maven POM with Karma Studios organization information.
  *
  * This extension function sets up the organization and developers sections

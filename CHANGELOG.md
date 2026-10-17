@@ -1,5 +1,27 @@
 ## [Unreleased]
 
+### Added
+
+- `KotlinMultiplatformAndroidLibraryTarget.withDefaultHostTests()` extension 
+- `KotlinMultiplatformAndroidLibraryTarget.withDefaultDeviceTests()` extension
+- `GitLabPackage.registerCopyJvmJniLibraryTasks` extension for automatically copying prebuilt binaries for a JVM distribution
+- `GitLabPackage.registerCopyAndroidJniLibraryTasks` extension for automatically copying prebuilt binaries for an Android distribution
+- `karmaLabsOrganization` extension for internal Karma Labs publishing
+- `TaskContainer.maybeRegister` extension for lazily registering and getting tasks
+
+### Fixed
+
+- Broken artifact resolution for `withCInterop` extension for iOS, tvOS and watchOS targets
+
+### Changed
+
+- Enable `org.gradle.tooling.parallel`
+
+### Removed
+
+- Deprecated Kotlin JVM and MP extensions for experimental compiler settings
+- watchOS arm32 target from `withWatchos` extension
+
 ## [1.21.1]
 
 ## [1.21.0]

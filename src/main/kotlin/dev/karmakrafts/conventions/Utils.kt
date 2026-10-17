@@ -23,6 +23,10 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URLConnection
+import java.nio.file.Path
+import java.security.MessageDigest
+import kotlin.io.path.exists
+import kotlin.io.path.readBytes
 
 /**
  * Characters that need to be percent-encoded in URLs.
@@ -37,6 +41,13 @@ private const val SPECIAL_CHARS: String = ":/?#[]@!$&'()*+,;="
 @PublishedApi
 internal val json: Json = Json {
     ignoreUnknownKeys = true
+}
+
+internal fun Path.checksum(): String? {
+    if (!exists()) return null
+    val digest = MessageDigest.getInstance("SHA-1")
+    digest.update(readBytes())
+    return digest.digest().joinToString("") { it.toHexString() }
 }
 
 /**

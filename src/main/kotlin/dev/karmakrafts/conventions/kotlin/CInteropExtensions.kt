@@ -21,6 +21,7 @@ import dev.karmakrafts.conventions.GitLabPackageArtifact
 import org.gradle.internal.extensions.stdlib.capitalized
 import org.jetbrains.kotlin.gradle.plugin.mpp.DefaultCInteropSettings
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.konan.target.Family
 
 /**
  * Makes a C interop processing task depend on the extraction of a GitLab package artifact.
@@ -57,9 +58,15 @@ fun KotlinNativeTarget.withCInterop( // @formatter:off
 ) { // @formatter:on
     compilations.named("main") {
         val architecture = konanTarget.accurateArchitectureName
-        val fileName = "build-${konanTarget.familyName}-$architecture$fileSuffix.$fileExtension"
+        val extraSuffix = when (konanTarget.family) {
+            Family.IOS, Family.TVOS, Family.WATCHOS -> if ("simulator" in binariesTaskName.lowercase()) "-simulator"
+            else "-device"
+
+            else -> ""
+        }
+        val fileName = "build-${konanTarget.familyName}-$architecture$extraSuffix$fileSuffix.$fileExtension"
         val suffix = "${konanTarget.familyName}${konanTarget.accurateArchitectureName.capitalized()}"
-        val artifact = pkg[fileName, suffix, name]
+        val artifact = pkg[fileName, "$suffix$extraSuffix", name]
         cinterops {
             register(name) {
                 dependsOn(artifact)

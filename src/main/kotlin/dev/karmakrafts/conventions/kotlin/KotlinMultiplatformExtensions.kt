@@ -18,10 +18,15 @@ package dev.karmakrafts.conventions.kotlin
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder
+import com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest
+import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
+import dev.karmakrafts.conventions.EmbeddedDependencies
 import dev.karmakrafts.conventions.PluginIds
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode
@@ -37,7 +42,9 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmWasiTargetDsl
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
 /**
- * Configures the default native target settings.
+ * Applies the common Kotlin/Native compiler configuration to this target.
+ *
+ * Allows the first Kotlin/Native library with a duplicated unique name to be used and emits a warning.
  */
 fun KotlinNativeTarget.defaultNativeTarget() {
     compilerOptions {
@@ -46,15 +53,19 @@ fun KotlinNativeTarget.defaultNativeTarget() {
 }
 
 /**
- * Configures the default macOS target settings.
+ * Applies the default Kotlin/Native configuration for a macOS target.
  */
 fun KotlinNativeTarget.defaultMacosTarget() {
     defaultNativeTarget()
 }
 
 /**
- * Adds macOS targets to the multiplatform project.
+ * Adds a macOS Arm64 target to the multiplatform project.
  *
+ * The target is named by appending `Arm64` to [name] and receives the default macOS configuration
+ * before [config] is applied.
+ *
+ * @param name The prefix for the generated target name. Defaults to `macos`.
  * @param config The configuration to apply to each macOS target.
  */
 inline fun KotlinMultiplatformExtension.withMacos(
@@ -67,7 +78,7 @@ inline fun KotlinMultiplatformExtension.withMacos(
 }
 
 /**
- * Configures the default iOS target settings.
+ * Applies the default Kotlin/Native configuration for an iOS target.
  */
 fun KotlinNativeTarget.defaultIosTarget() {
     defaultNativeTarget()
@@ -76,6 +87,10 @@ fun KotlinNativeTarget.defaultIosTarget() {
 /**
  * Adds iOS targets (Arm64, and Simulator Arm64) to the multiplatform project.
  *
+ * Generated target names append `Arm64` and `SimulatorArm64` to [name]. Both targets receive the
+ * default iOS configuration before [config] is applied.
+ *
+ * @param name The prefix for the generated target names. Defaults to `ios`.
  * @param config The configuration to apply to each iOS target.
  */
 inline fun KotlinMultiplatformExtension.withIos(
@@ -94,6 +109,10 @@ inline fun KotlinMultiplatformExtension.withIos(
 /**
  * Adds tvOS targets (Arm64, and Simulator Arm64) to the multiplatform project.
  *
+ * Generated target names append `Arm64` and `SimulatorArm64` to [name]. Both targets receive the
+ * default iOS configuration before [config] is applied.
+ *
+ * @param name The prefix for the generated target names. Defaults to `tvos`.
  * @param config The configuration to apply to each tvOS target.
  */
 inline fun KotlinMultiplatformExtension.withTvos(
@@ -112,15 +131,15 @@ inline fun KotlinMultiplatformExtension.withTvos(
 /**
  * Adds watchOS targets (Arm32, Arm64, and Simulator Arm64) to the multiplatform project.
  *
+ * Generated target names append `Arm32`, `Arm64`, and `SimulatorArm64` to [name]. Each target
+ * receives the default iOS configuration before [config] is applied.
+ *
+ * @param name The prefix for the generated target names. Defaults to `watchos`.
  * @param config The configuration to apply to each watchOS target.
  */
 inline fun KotlinMultiplatformExtension.withWatchos(
     name: String = "watchos", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
-    watchosArm32("${name}Arm32") {
-        defaultIosTarget()
-        config()
-    }
     watchosArm64("${name}Arm64") {
         defaultIosTarget()
         config()
@@ -132,7 +151,7 @@ inline fun KotlinMultiplatformExtension.withWatchos(
 }
 
 /**
- * Configures the default Linux target settings.
+ * Applies the default Kotlin/Native configuration for a Linux target.
  */
 fun KotlinNativeTarget.defaultLinuxTarget() {
     defaultNativeTarget()
@@ -141,6 +160,10 @@ fun KotlinNativeTarget.defaultLinuxTarget() {
 /**
  * Adds Linux targets (x64 and Arm64) to the multiplatform project.
  *
+ * Generated target names append `X64` and `Arm64` to [name]. Both targets receive the default
+ * Linux configuration before [config] is applied.
+ *
+ * @param name The prefix for the generated target names. Defaults to `linux`.
  * @param config The configuration to apply to each Linux target.
  */
 inline fun KotlinMultiplatformExtension.withLinux(
@@ -157,7 +180,7 @@ inline fun KotlinMultiplatformExtension.withLinux(
 }
 
 /**
- * Configures the default Android Native target settings.
+ * Applies the default Kotlin/Native configuration for an Android Native target.
  */
 fun KotlinNativeTarget.defaultAndroidNativeTarget() {
     defaultNativeTarget()
@@ -166,6 +189,10 @@ fun KotlinNativeTarget.defaultAndroidNativeTarget() {
 /**
  * Adds Android Native targets (Arm32, Arm64, x64, and x86) to the multiplatform project.
  *
+ * Generated target names append `Arm32`, `Arm64`, `X64`, and `X86` to [name]. Each target
+ * receives the default Android Native configuration before [config] is applied.
+ *
+ * @param name The prefix for the generated target names. Defaults to `androidNative`.
  * @param config The configuration to apply to each Android Native target.
  */
 inline fun KotlinMultiplatformExtension.withAndroidNative(
@@ -190,7 +217,7 @@ inline fun KotlinMultiplatformExtension.withAndroidNative(
 }
 
 /**
- * Configures the default MinGW (Windows) target settings.
+ * Applies the default Kotlin/Native configuration for a MinGW (Windows) target.
  */
 fun KotlinNativeTarget.defaultMingwTarget() {
     defaultNativeTarget()
@@ -199,6 +226,10 @@ fun KotlinNativeTarget.defaultMingwTarget() {
 /**
  * Adds the MinGW x64 (Windows) target to the multiplatform project.
  *
+ * The target is named by appending `X64` to [name] and receives the default MinGW configuration
+ * before [config] is applied.
+ *
+ * @param name The prefix for the generated target name. Defaults to `mingw`.
  * @param config The configuration to apply to the MinGW target.
  */
 inline fun KotlinMultiplatformExtension.withMingw(
@@ -211,7 +242,10 @@ inline fun KotlinMultiplatformExtension.withMingw(
 }
 
 /**
- * Adds all common native targets (Android Native, Linux, macOS, iOS, tvOS, watchOS, and MinGW) to the multiplatform project.
+ * Adds all supported native targets to the multiplatform project.
+ *
+ * This adds Android Native, Linux, macOS, iOS, tvOS, watchOS, and MinGW targets using their
+ * respective default configuration, then applies [config] to every generated target.
  *
  * @param config The configuration to apply to each native target.
  */
@@ -226,7 +260,9 @@ inline fun KotlinMultiplatformExtension.withNative(crossinline config: KotlinNat
 }
 
 /**
- * Configures the default JavaScript target settings, including source maps.
+ * Applies the default JavaScript compiler configuration.
+ *
+ * Source maps are enabled and always embed source content in the generated source maps.
  */
 fun KotlinJsTargetDsl.defaultJsTarget() {
     compilerOptions {
@@ -238,6 +274,10 @@ fun KotlinJsTargetDsl.defaultJsTarget() {
 /**
  * Adds the JavaScript target to the multiplatform project.
  *
+ * The target is named [name], receives the default JavaScript configuration, and then applies
+ * [config].
+ *
+ * @param name The JavaScript target name. Defaults to `js`.
  * @param config The configuration to apply to the JavaScript target.
  */
 inline fun KotlinMultiplatformExtension.withJs(
@@ -252,6 +292,7 @@ inline fun KotlinMultiplatformExtension.withJs(
 /**
  * Adds the WebAssembly (Wasm) browser target to the multiplatform project.
  *
+ * @param name The Wasm JavaScript target name. Defaults to `wasmJs`.
  * @param config The configuration to apply to the Wasm target.
  */
 @OptIn(ExperimentalWasmDsl::class)
@@ -277,6 +318,7 @@ inline fun KotlinWasmWasiTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDs
 /**
  * Adds the WebAssembly (Wasm) WASI target to the multiplatform project.
  *
+ * @param name The Wasm WASI target name. Defaults to `wasmWasi`.
  * @param config The configuration to apply to the Wasm target.
  */
 @OptIn(ExperimentalWasmDsl::class)
@@ -291,6 +333,9 @@ inline fun KotlinMultiplatformExtension.withWasmWasi(
 /**
  * Adds both JavaScript and WebAssembly (Wasm) targets to the multiplatform project.
  *
+ * This creates the default `js` and `wasmJs` targets and applies [config] to both. The JavaScript
+ * target also receives the default JavaScript compiler configuration.
+ *
  * @param config The configuration to apply to both targets.
  */
 inline fun KotlinMultiplatformExtension.withWeb(crossinline config: KotlinJsTargetDsl.() -> Unit = {}) {
@@ -298,6 +343,11 @@ inline fun KotlinMultiplatformExtension.withWeb(crossinline config: KotlinJsTarg
     withWasmJs(config = config)
 }
 
+/**
+ * Applies the default browser test configuration.
+ *
+ * Configures the test task to use Karma with Chrome Headless.
+ */
 fun KotlinJsSubTargetDsl.defaultBrowserConfig() {
     testTask {
         useKarma {
@@ -308,6 +358,8 @@ fun KotlinJsSubTargetDsl.defaultBrowserConfig() {
 
 /**
  * Adds browser support to a JavaScript-like target.
+ *
+ * Applies the default browser test configuration before [config].
  *
  * @param config The configuration to apply to the browser sub-target.
  */
@@ -334,6 +386,7 @@ inline fun KotlinJsTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDsl.() -
 /**
  * Adds the JVM target to the multiplatform project.
  *
+ * @param name The JVM target name. Defaults to `jvm`.
  * @param config The configuration to apply to the JVM target.
  */
 inline fun KotlinMultiplatformExtension.withJvm(
@@ -345,8 +398,12 @@ inline fun KotlinMultiplatformExtension.withJvm(
 }
 
 /**
- * Adds the Android target to the multiplatform project and applies default Android configuration.
+ * Adds an Android target to the multiplatform project and configures the Android application extension.
  *
+ * When the Android application plugin is applied, this configures its namespace, compile SDK, lint
+ * target SDK, and minimum SDK. SDK providers must resolve to integer version numbers.
+ *
+ * @param name The Android target name. Defaults to `android`.
  * @param namespace The unique Android namespace associated with this target's module.
  * @param compileSdk A provider to provide the compile SDK version for this application.
  * @param minSdk A provider to provide the minimal SDK version for this application.
@@ -377,8 +434,84 @@ inline fun KotlinMultiplatformExtension.withAndroid(
 }
 
 /**
- * Adds the Android target to the multiplatform project, configures it for a library (publishing release variants),
- * and applies default Android configuration.
+ * Registers default Android host tests for this target.
+ *
+ * Host tests run on the local machine. [compilationConfig] configures the test compilation builder
+ * and [testConfig] configures the resulting host test.
+ *
+ * @param compilationConfig The configuration to apply while creating the host test compilation.
+ * @param testConfig The configuration to apply to the registered host test.
+ */
+inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultHostTests(
+    crossinline compilationConfig: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit = {},
+    crossinline testConfig: KotlinMultiplatformAndroidHostTest.() -> Unit = {}
+) {
+    withHostTestBuilder {
+        compilationConfig()
+    }.configure {
+        testConfig()
+    }
+}
+
+/**
+ * Registers default Android device tests for this target,
+ * including a default Pixel 6/API 36 emulator device.
+ *
+ * Device tests run on an emulator or physical device. The registered managed device is always
+ * named according to the given device type and API level; its device model and API level are configured by [device] and [apiLevel].
+ * [compilationConfig] configures the test compilation builder and [testConfig] configures the
+ * resulting device test.
+ *
+ * @param sourceSetTreeName The source set tree used by the device test. Defaults to `test`.
+ * @param device The managed device hardware profile. Defaults to `Pixel 6`.
+ * @param apiLevel A provider for the managed device API level. Defaults to API 36.
+ * @param compilationConfig The configuration to apply while creating the device test compilation.
+ * @param testConfig The configuration to apply to the registered device test.
+ */
+inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultDeviceTests(
+    sourceSetTreeName: String = "test",
+    device: String = "Pixel 6",
+    apiLevel: Provider<String> = project.provider { "36" },
+    crossinline compilationConfig: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit = {},
+    crossinline testConfig: KotlinMultiplatformAndroidDeviceTest.() -> Unit = {}
+) {
+    withDeviceTestBuilder {
+        this.sourceSetTreeName = sourceSetTreeName
+        compilationConfig()
+    }.configure {
+        managedDevices {
+            val cleanDeviceType = device.replace(" ", "").lowercase()
+            @Suppress("UnstableApiUsage") //
+            localDevices.create("${cleanDeviceType}Api${apiLevel.get()}") {
+                this.device = device
+                this.apiLevel = apiLevel.get().toInt()
+            }
+        }
+        // Use androidx.test.ext.junit & androidx.test.runner
+        instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testConfig()
+    }
+    // Automatically inject the required runner dependencies to make our lives easier
+    project.extensions.getByType<KotlinMultiplatformExtension>().sourceSets.apply {
+        named("androidHostTest") {
+            dependencies {
+                implementation(EmbeddedDependencies.androidxTestJUnit)
+            }
+        }
+        named("androidDeviceTest") {
+            dependencies {
+                implementation(EmbeddedDependencies.androidxTestJUnit)
+                implementation(EmbeddedDependencies.androidxTestRunner)
+            }
+        }
+    }
+}
+
+/**
+ * Configures the existing Android Kotlin Multiplatform library target.
+ *
+ * The target's namespace, compile SDK, minimum SDK, and lint target SDK are configured before
+ * [config] is applied. SDK providers must resolve to integer version numbers.
  *
  * @param namespace The unique Android namespace associated with this target's module.
  * @param compileSdk A provider to provide the compile SDK version for this library.
@@ -403,8 +536,11 @@ inline fun KotlinMultiplatformExtension.withAndroidLibrary(
 }
 
 /**
- * Shorthand for `withCompilations { compilation -> compilation is KotlinMultiplatformAndroidCompilation }`,
- * since the new AGP library extension isn't fully supported by the hierarchy DSL yet.
+ * Restricts hierarchy configuration to Android Kotlin Multiplatform library compilations.
+ *
+ * This is a shorthand for filtering compilations to [KotlinMultiplatformAndroidCompilation], which
+ * is necessary because the Android Gradle Plugin library extension is not fully supported by the
+ * hierarchy DSL.
  */
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 fun KotlinHierarchyBuilder.withAndroidLibrary() {
@@ -412,7 +548,10 @@ fun KotlinHierarchyBuilder.withAndroidLibrary() {
 }
 
 /**
- * Applies common compiler options to all available KMP targets.
+ * Applies common experimental API opt-ins to the multiplatform compiler options.
+ *
+ * Opts in to experimental standard library, unsigned types, UUID, time, atomic, encoding,
+ * contracts, and extended contracts APIs.
  */
 fun KotlinMultiplatformExtension.defaultCompilerOptions() {
     compilerOptions {
@@ -425,21 +564,6 @@ fun KotlinMultiplatformExtension.defaultCompilerOptions() {
             "kotlin.io.encoding.ExperimentalEncodingApi",
             "kotlin.contracts.ExperimentalContracts",
             "kotlin.contracts.ExperimentalExtendedContracts"
-        )
-    }
-}
-
-/**
- * Enables all experimental language features for the current Kotlin version.
- */
-@Deprecated("Use compilerOptions directly for experimental features")
-fun KotlinMultiplatformExtension.enableExperimentalFeatures() {
-    compilerOptions {
-        freeCompilerArgs.addAll(
-            "-Xexpect-actual-classes",
-            "-Xcontext-parameters",
-            "-Xexplicit-backing-fields",
-            "-Xreturn-value-checker=check"
         )
     }
 }
