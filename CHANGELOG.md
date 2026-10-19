@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.22.1]
+
 ### Changed
 
 - Automatically wire task dependencies for `GitLabPackage.registerCopyJvmJniLibraryTasks`
