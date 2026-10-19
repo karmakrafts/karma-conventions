@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Changed
+
+- Automatically wire task dependencies for `GitLabPackage.registerCopyJvmJniLibraryTasks`
+- Automatically wire task dependencies for `GitLabPackage.registerCopyAndroidJniLibraryTasks`
+
 ## [1.22.0]
 
 ### Added

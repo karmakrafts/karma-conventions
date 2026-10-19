@@ -16,6 +16,7 @@
 
 package dev.karmakrafts.conventions
 
+import com.android.build.gradle.internal.crash.afterEvaluate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -29,6 +30,7 @@ import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.testing.Test
 import org.gradle.authentication.http.HttpHeaderAuthentication
 import org.gradle.internal.extensions.stdlib.capitalized
 import org.gradle.kotlin.dsl.create
@@ -329,15 +331,19 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
         when {
             pluginManager.hasPlugin(PluginIds.KOTLIN_MP) -> pluginManager.withPlugin(PluginIds.KOTLIN_MP) {
                 val extension = project.extensions.getByType<KotlinMultiplatformExtension>()
-                extension.sourceSets.named("jvmMain") { // The default JVM KMP source set
-                    resources.srcDir(project.layout.buildDirectory.dir("generatedJniResources"))
+                afterEvaluate {
+                    extension.sourceSets.named("jvmMain") { // The default JVM KMP source set
+                        resources.srcDir(project.layout.buildDirectory.dir("generatedJniResources"))
+                    }
                 }
             }
 
             pluginManager.hasPlugin(PluginIds.KOTLIN_JVM) -> pluginManager.withPlugin(PluginIds.KOTLIN_JVM) {
                 val extension = project.extensions.getByType<KotlinJvmProjectExtension>()
-                extension.sourceSets.named("main") { // The default JVM source set
-                    resources.srcDir(project.layout.buildDirectory.dir("generatedJniResources"))
+                afterEvaluate {
+                    extension.sourceSets.named("main") { // The default JVM source set
+                        resources.srcDir(project.layout.buildDirectory.dir("generatedJniResources"))
+                    }
                 }
             }
         }
@@ -376,23 +382,39 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
         baseBinaryName: String,
         binaryNames: Map<String, String> = getDefaultJniPlatformBinaries(baseBinaryName),
         platforms: List<Pair<String, String>> = defaultJvmJniPlatforms
-    ): List<TaskProvider<Copy>> = with(packageRegistry.project.server.projectGetter().tasks) {
+    ): List<TaskProvider<Copy>> {
         registerJvmJniLibraryResourceRoot()
+        val project = packageRegistry.project.server.projectGetter()
+        val pluginManager = project.pluginManager
         val tasks = ArrayList<TaskProvider<Copy>>()
-        for ((name, suffix) in platforms) {
-            val platformArtifact = this@GitLabPackage["build-$name-release.zip", suffix]
-            val copyTask = register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
-                description = "Extracts required JNI natives to the resource root of the JVM"
-                group = "jnilibs"
-                dependsOn(platformArtifact.extractTask)
-                from((platformArtifact.outputDirectoryPath / binaryNames[name]!!).toFile())
-                into(project.layout.buildDirectory.dir("generatedJniResources/natives/$name"))
-                defaultCopyJniLibrariesCondition()
+        with(project.tasks) {
+            for ((name, suffix) in platforms) {
+                val platformArtifact = this@GitLabPackage["build-$name-release.zip", suffix]
+                val copyTask = register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
+                    description = "Extracts required JNI natives to the resource root of the JVM"
+                    group = "jnilibs"
+                    dependsOn(platformArtifact.extractTask)
+                    from((platformArtifact.outputDirectoryPath / binaryNames[name]!!).toFile())
+                    into(project.layout.buildDirectory.dir("generatedJniResources/natives/$name"))
+                    defaultCopyJniLibrariesCondition()
+                }
+                // The files should be copied when the project is built AND when a Gradle sync in IDEA happens
+                named("prepareKotlinIdeaImport") { dependsOn(copyTask) }
+                named("assemble") { dependsOn(copyTask) }
+                tasks += copyTask
             }
-            // The files should be copied when the project is built AND when a Gradle sync in IDEA happens
-            named("prepareKotlinIdeaImport") { dependsOn(copyTask) }
-            named("assemble") { dependsOn(copyTask) }
-            tasks += copyTask
+            // Wire task dependencies based on the used plugin
+            afterEvaluate {
+                when {
+                    pluginManager.hasPlugin(PluginIds.KOTLIN_MP) -> named("jvmProcessResources") {
+                        dependsOn(tasks)
+                    }
+
+                    pluginManager.hasPlugin(PluginIds.KOTLIN_JVM) -> named("processResources") {
+                        dependsOn(tasks)
+                    }
+                }
+            }
         }
         return tasks
     }
@@ -401,23 +423,42 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
         taskPrefix: String,
         baseBinaryName: String,
         binaryNames: Map<String, String> = getDefaultJniPlatformBinaries(baseBinaryName),
-        platforms: List<Triple<String, String, String>> = defaultAndroidJniPlatforms
-    ): List<TaskProvider<Copy>> = with(packageRegistry.project.server.projectGetter().tasks) {
+        platforms: List<Triple<String, String, String>> = defaultAndroidJniPlatforms,
+        useJvmNativesForHostTests: Boolean = true
+    ): List<TaskProvider<Copy>> {
+        val project = packageRegistry.project.server.projectGetter()
+        val pluginManager = project.pluginManager
         val tasks = ArrayList<TaskProvider<Copy>>()
-        for ((name, suffix, jniTarget) in platforms) {
-            val platformArtifact = this@GitLabPackage["build-$name-release.zip", suffix]
-            val copyTask = register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
-                description = "Extracts required JNI natives to the resource root of Android"
-                group = "jnilibs"
-                dependsOn(platformArtifact.extractTask)
-                from((platformArtifact.outputDirectoryPath / binaryNames[name]!!).toFile())
-                into("src/androidMain/jniLibs/$jniTarget")
-                defaultCopyJniLibrariesCondition()
+        val isMultiplatform = pluginManager.hasPlugin(PluginIds.KOTLIN_MP)
+        val sourceSetName = if (isMultiplatform) "androidMain" else "main"
+        with(project.tasks) {
+            for ((name, suffix, jniTarget) in platforms) {
+                val platformArtifact = this@GitLabPackage["build-$name-release.zip", suffix]
+                val copyTask = register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
+                    description = "Extracts required JNI natives to the resource root of Android"
+                    group = "jnilibs"
+                    dependsOn(platformArtifact.extractTask)
+                    from((platformArtifact.outputDirectoryPath / binaryNames[name]!!).toFile())
+                    into("src/$sourceSetName/jniLibs/$jniTarget")
+                    defaultCopyJniLibrariesCondition()
+                }
+                // The files should be copied when the project is built AND when a Gradle sync in IDEA happens
+                named("prepareKotlinIdeaImport") { dependsOn(copyTask) }
+                named("assemble") { dependsOn(copyTask) }
+                tasks += copyTask
             }
-            // The files should be copied when the project is built AND when a Gradle sync in IDEA happens
-            named("prepareKotlinIdeaImport") { dependsOn(copyTask) }
-            named("assemble") { dependsOn(copyTask) }
-            tasks += copyTask
+            val mergeLibsTaskName = if (isMultiplatform) "mergeAndroidMainJniLibFolders" else "mergeMainJniLibFolders"
+            afterEvaluate {
+                named(mergeLibsTaskName) {
+                    dependsOn(tasks)
+                }
+                // Optional workaround so KMP Android host tests use desktop JVM natives
+                if (useJvmNativesForHostTests && isMultiplatform) {
+                    named("testAndroidHostTest", Test::class.java) {
+                        classpath = project.files(named("jvmProcessResources")) + classpath
+                    }
+                }
+            }
         }
         return tasks
     }
