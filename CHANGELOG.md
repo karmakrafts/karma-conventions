@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.22.3]
+
 The last changelog was cut off due to a manual mishap.
 
 ### Added
