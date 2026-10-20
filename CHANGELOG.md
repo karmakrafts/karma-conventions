@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+The last changelog was cut off due to a manual mishap.
+
+### Added
+
+- `Project.withKotlin {}` extension for automatically depending on the Kotlin MP or JVM plugin
+
+### Fixed
+
+- `GitLabPackage.registerCopyJvmJniLibraryTasks` not registering generated source sets correctly
+
 ## [1.22.2]
 
 ### Changed
