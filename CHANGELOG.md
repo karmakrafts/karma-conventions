@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [1.22.2]
+
 ### Changed
 
 - Updated to NMCP 1.6.2
