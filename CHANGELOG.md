@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+### Changed
+
+- Updated to NMCP 1.6.2
+
+### Fixed
+
+- Projects with signing not building when no keystore is available
+- `GitLabPackage.registerCopyJvmJniLibraryTasks` not 
+
 ## [1.22.1]
 
 ### Changed

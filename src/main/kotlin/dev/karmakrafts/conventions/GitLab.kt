@@ -395,7 +395,7 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
                     group = "jnilibs"
                     dependsOn(platformArtifact.extractTask)
                     from((platformArtifact.outputDirectoryPath / binaryNames[name]!!).toFile())
-                    into(project.layout.buildDirectory.dir("generatedJniResources/natives/$name"))
+                    into(project.layout.buildDirectory.dir("generated${taskPrefix.capitalized()}Resources/natives/$name"))
                     defaultCopyJniLibrariesCondition()
                 }
                 // The files should be copied when the project is built AND when a Gradle sync in IDEA happens
@@ -406,12 +406,22 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
             // Wire task dependencies based on the used plugin
             afterEvaluate {
                 when {
-                    pluginManager.hasPlugin(PluginIds.KOTLIN_MP) -> named("jvmProcessResources") {
-                        dependsOn(tasks)
+                    pluginManager.hasPlugin(PluginIds.KOTLIN_MP) -> {
+                        project.extensions.getByType<KotlinMultiplatformExtension>().sourceSets.named("jvmMain") {
+                            resources.srcDir(project.layout.buildDirectory.dir("generated${taskPrefix.capitalized()}Resources"))
+                        }
+                        named("jvmProcessResources") {
+                            dependsOn(tasks)
+                        }
                     }
 
-                    pluginManager.hasPlugin(PluginIds.KOTLIN_JVM) -> named("processResources") {
-                        dependsOn(tasks)
+                    pluginManager.hasPlugin(PluginIds.KOTLIN_JVM) -> {
+                        project.extensions.getByType<KotlinJvmProjectExtension>().sourceSets.named("main") {
+                            resources.srcDir(project.layout.buildDirectory.dir("generated${taskPrefix.capitalized()}Resources"))
+                        }
+                        named("processResources") {
+                            dependsOn(tasks)
+                        }
                     }
                 }
             }

@@ -220,7 +220,8 @@ publishing {
     }
 }
 
-@OptIn(ExperimentalEncodingApi::class) signing {
+signing {
+    isRequired = false
     System.getenv("SIGNING_KEY_ID")?.let { keyId ->
         useInMemoryPgpKeys( // @formatter:off
             keyId,
