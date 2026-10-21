@@ -104,6 +104,7 @@ dependencies {
     compileOnly(libs.plugins.android.application.asLibrary())
     compileOnly(libs.plugins.nmcp.asLibrary())
     compileOnly(libs.plugins.dokka.asLibrary())
+    testImplementation(kotlin("test-junit"))
 }
 
 gradlePlugin {

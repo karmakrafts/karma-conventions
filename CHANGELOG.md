@@ -1,5 +1,21 @@
 ## [Unreleased]
 
+### Added
+
+- `KotlinWasmWasiTargetDsl.withWasmtime` extension for adding a default Wasmtime WASI target
+- `KotlinNativeStandaloneTest` to allow running Kotlin/Native tests from a pre-compiled binary and create JUnit compatible reports from its output
+- `KotlinMultiplatformExtension.withLinuxArm64StandaloneTests` extension for easily registering standalone Linux arm64 tests
+
+### Deprecated
+
+- `KotlinWasmWasiTargetDsl.withNodeJs` extension in favor of `withWasmtime`
+
+### Changed
+
+- Updated to Kotlin 2.5.0-Beta2
+- Updated to kotlinx.serialization 1.12.0
+- Updated to Dokka 2.3.0-Beta
+
 ## [1.22.4]
 
 ### Changed

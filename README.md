@@ -44,3 +44,22 @@ plugins {
     id("dev.karmakrafts.conventions.karma-conventions") version "<version>"
 }
 ```
+
+### Standalone Kotlin/Native tests
+
+Run an already compiled Kotlin/Native `kotlin.test` executable on a compatible host:
+
+```kotlin
+import dev.karmakrafts.conventions.kotlin.KotlinNativeStandaloneTest
+
+tasks.register<KotlinNativeStandaloneTest>("standaloneNativeTest") {
+    testExecutable.set(layout.projectDirectory.file("tests.kexe"))
+    // Optional: override the default JUnit XML report location.
+    reportFile.set(layout.buildDirectory.file("test-results/native/TEST-native.xml"))
+}
+```
+
+The task discovers all tests and runs each one sequentially in a separate process, with the executable's
+directory as its working directory. Standard output and standard error are captured per test in the report,
+including failures and skipped tests. Failed tests do not stop subsequent tests; the task fails after writing
+the complete report. By default, the report is written to `build/test-results/<task-name>/TEST-<task-name>.xml`.

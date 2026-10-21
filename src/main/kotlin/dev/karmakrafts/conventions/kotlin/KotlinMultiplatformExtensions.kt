@@ -40,6 +40,24 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsSubTargetDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmWasiTargetDsl
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
+import org.jetbrains.kotlin.gradle.targets.wasm.dsl.KotlinWasmtimeDsl
+
+/**
+ * A workaround for running Kotlin/Native Linux arm64 unit tests via Gradle
+ * even tho the compiler does not support Linux arm64 as a host.
+ * This works in conjunction with a CI, copying the test binary from host to test target.
+ *
+ * This may be removed in the future when the compiler adds host support for Linux arm64,
+ * but it is to be considered stable for the time being.
+ *
+ * **This function assumes a debug build of the tests to be present in the expected Gradle/KMP location,
+ * release builds will be ignored.**
+ */
+fun KotlinMultiplatformExtension.withLinuxArm64StandaloneTests() {
+    project.tasks.register("linuxArm64StandaloneTest", KotlinNativeStandaloneTest::class.java) {
+        testExecutable.set(project.layout.buildDirectory.file("bin/linuxArm64/debugTest/test.kexe"))
+    }
+}
 
 /**
  * Applies the common Kotlin/Native compiler configuration to this target.
@@ -195,6 +213,7 @@ fun KotlinNativeTarget.defaultAndroidNativeTarget() {
  * @param name The prefix for the generated target names. Defaults to `androidNative`.
  * @param config The configuration to apply to each Android Native target.
  */
+@Suppress("DEPRECATION") // TODO: Substitute with KCML custom targets if these get removed eventually
 inline fun KotlinMultiplatformExtension.withAndroidNative(
     name: String = "androidNative", crossinline config: KotlinNativeTarget.() -> Unit = {}
 ) {
@@ -295,7 +314,6 @@ inline fun KotlinMultiplatformExtension.withJs(
  * @param name The Wasm JavaScript target name. Defaults to `wasmJs`.
  * @param config The configuration to apply to the Wasm target.
  */
-@OptIn(ExperimentalWasmDsl::class)
 inline fun KotlinMultiplatformExtension.withWasmJs(
     name: String = "wasmJs", crossinline config: KotlinJsTargetDsl.() -> Unit = {}
 ) {
@@ -309,8 +327,21 @@ inline fun KotlinMultiplatformExtension.withWasmJs(
  *
  * @param config The configuration to apply to the Node.js sub-target.
  */
+@Deprecated(message = "NodeJS WASI target is deprecated in Kotlin", replaceWith = ReplaceWith("withWasmtime"))
 inline fun KotlinWasmWasiTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDsl.() -> Unit = {}) {
     nodejs {
+        config()
+    }
+}
+
+/**
+ * Adds Wasmtime support to a WASI target.
+ *
+ * @param config The configuration to apply to the Node.js sub-target.
+ */
+@OptIn(ExperimentalWasmDsl::class)
+inline fun KotlinWasmWasiTargetDsl.withWasmtime(crossinline config: KotlinWasmtimeDsl.() -> Unit = {}) {
+    wasmtime {
         config()
     }
 }
