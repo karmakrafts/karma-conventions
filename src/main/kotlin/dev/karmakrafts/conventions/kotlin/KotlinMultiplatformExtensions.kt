@@ -41,6 +41,7 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmWasiTargetDsl
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import org.jetbrains.kotlin.gradle.targets.wasm.dsl.KotlinWasmtimeDsl
+import org.jetbrains.kotlin.konan.target.HostManager
 
 /**
  * A workaround for running Kotlin/Native Linux arm64 unit tests via Gradle
@@ -269,13 +270,16 @@ inline fun KotlinMultiplatformExtension.withMingw(
  * @param config The configuration to apply to each native target.
  */
 inline fun KotlinMultiplatformExtension.withNative(crossinline config: KotlinNativeTarget.() -> Unit = {}) {
-    withAndroidNative(config = config)
-    withLinux(config = config)
-    withMacos(config = config)
-    withIos(config = config)
-    withTvos(config = config)
-    withWatchos(config = config)
-    withMingw(config = config)
+    // Native target may only be enabled when the host supports it, otherwise Gradle will always fail/crash
+    if(HostManager.hostIsSupported) {
+        withAndroidNative(config = config)
+        withLinux(config = config)
+        withMacos(config = config)
+        withIos(config = config)
+        withTvos(config = config)
+        withWatchos(config = config)
+        withMingw(config = config)
+    }
 }
 
 /**
