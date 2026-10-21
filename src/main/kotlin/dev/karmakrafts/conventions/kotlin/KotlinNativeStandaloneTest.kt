@@ -51,6 +51,8 @@ abstract class KotlinNativeStandaloneTest @Inject constructor(objectFactory: Obj
 
     init {
         outputs.upToDateWhen { false }
+        group = "verification"
+        description = "Runs a pre-compiled Kotlin/Native test executable and generates a report for it"
     }
 
     @TaskAction
