@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Changed
+
+- Updated to Gradle 9.8.2
+
 ## [1.22.3]
 
 The last changelog was cut off due to a manual mishap.
