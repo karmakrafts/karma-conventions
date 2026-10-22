@@ -372,15 +372,14 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
         with(project.tasks) {
             for ((name, suffix) in platforms) {
                 val platformArtifact = this@GitLabPackage["build-$name-release.zip", suffix]
-                val copyTask =
-                    register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
-                        description = "Extracts required JNI natives to the resource root of the JVM"
-                        group = "jnilibs"
-                        dependsOn(platformArtifact.extractTask)
-                        from(platformArtifact.extractTask.map { it.destinationDir.resolve(binaryNames[name]!!) })
-                        into(project.layout.buildDirectory.dir("generatedJniResources/natives/$name"))
-                        defaultCopyJniLibrariesCondition()
-                    }
+                val copyTask = register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
+                    description = "Extracts required JNI natives to the resource root of the JVM"
+                    group = "jnilibs"
+                    dependsOn(platformArtifact.extractTask)
+                    from(platformArtifact.extractTask.map { it.destinationDir.resolve(binaryNames[name]!!) })
+                    into(project.layout.buildDirectory.dir("generatedJniResources/natives/$name"))
+                    defaultCopyJniLibrariesCondition()
+                }
                 tasks += copyTask
             }
             named { it == "prepareKotlinIdeaImport" || it == "assemble" }.configureEach { dependsOn(tasks) }

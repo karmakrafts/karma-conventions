@@ -272,7 +272,7 @@ inline fun KotlinMultiplatformExtension.withMingw(
  */
 inline fun KotlinMultiplatformExtension.withNative(crossinline config: KotlinNativeTarget.() -> Unit = {}) {
     // Native target may only be enabled when the host supports it, otherwise Gradle will always fail/crash
-    if(HostManager.hostIsSupported) {
+    if (HostManager.hostIsSupported) {
         withAndroidNative(config = config)
         withLinux(config = config)
         withMacos(config = config)
@@ -334,9 +334,7 @@ inline fun KotlinMultiplatformExtension.withWasmJs(
  */
 @Deprecated(message = "NodeJS WASI target is deprecated in Kotlin", replaceWith = ReplaceWith("withWasmtime"))
 inline fun KotlinWasmWasiTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDsl.() -> Unit = {}) {
-    nodejs {
-        config()
-    }
+    this.wasmtime { config() }
 }
 
 /**
@@ -501,8 +499,7 @@ inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultHostTests(
             named { it == "testAndroidHostTest" }.withType(Test::class.java).configureEach {
                 dependsOn("jvmProcessResources")
                 val jvmMainResources = project.provider {
-                    project.extensions.getByType<KotlinMultiplatformExtension>()
-                        .sourceSets.getByName("jvmMain").resources.srcDirs
+                    project.extensions.getByType<KotlinMultiplatformExtension>().sourceSets.getByName("jvmMain").resources.srcDirs
                 }
                 classpath = project.files(named { it == "jvmProcessResources" }, jvmMainResources) + classpath
             }
