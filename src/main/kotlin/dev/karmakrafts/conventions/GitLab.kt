@@ -20,10 +20,13 @@ import dev.karmakrafts.conventions.kotlin.withKotlin
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.credentials.HttpHeaderCredentials
+import org.gradle.api.file.Directory
+import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
@@ -39,11 +42,13 @@ import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import java.io.OutputStream
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.security.DigestInputStream
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.atomics.AtomicBoolean
@@ -63,7 +68,7 @@ import kotlin.io.path.outputStream
  * This class provides methods to access GitLab projects and their resources
  * through the GitLab API.
  *
- * @property project The Gradle project this GitLab server is associated with
+ * @property projectGetter Supplies the Gradle project this GitLab server is associated with
  * @property address The address of the GitLab server (e.g., "gitlab.com")
  */
 class GitLabServer internal constructor( // @formatter:off
@@ -117,7 +122,7 @@ class GitLabProject internal constructor( // @formatter:off
 ) { // @formatter:on
     private fun computeProjectInfoHash(): String {
         val digest = MessageDigest.getInstance("SHA-256")
-        digest.update("${server.address}-$name".encodeToByteArray())
+        digest.update(endpoint.encodeToByteArray())
         return digest.digest().joinToString("") { "%02x".format(it) }
     }
 
@@ -223,6 +228,7 @@ class GitLabPackageRegistry internal constructor( // @formatter:off
 
     /**
      * Gets a package by its path and version provider.
+     * The provider is resolved immediately; map the provider instead to defer package lookup.
      *
      * @param path The path of the package
      * @param version A provider for the version of the package
@@ -247,12 +253,12 @@ fun RepositoryHandler.packageRegistry(registry: GitLabPackageRegistry) {
  * Adds a GitLab project's package registry as a Maven repository.
  *
  * This extension function adds a Maven repository that points to the package
- * registry of the specified GitLab project.
+ * registry of the specified GitLab project without fetching its numeric ID.
  *
  * @param project The GitLab project whose package registry to add as a repository
  */
 fun RepositoryHandler.packageRegistry(project: GitLabProject) {
-    maven("${project.packageRegistry.endpoint}/maven")
+    maven("${project.endpoint}/packages/maven")
 }
 
 /**
@@ -263,7 +269,8 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
  * @property packageRegistry The GitLab package registry this package belongs to
  * @property url The URL of this package
  */
-@OptIn(ExperimentalAtomicApi::class)class GitLabPackage internal constructor( // @formatter:off
+@OptIn(ExperimentalAtomicApi::class)
+class GitLabPackage internal constructor( // @formatter:off
     val packageRegistry: GitLabPackageRegistry,
     val url: String,
     val path: String,
@@ -289,6 +296,7 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
 
     /**
      * Gets an artifact by its file name provider, suffix, and directory name.
+     * The provider is resolved immediately; map the provider instead to defer artifact lookup.
      *
      * @param fileName A provider for the name of the artifact file
      * @param suffix An optional suffix for the artifact (default is empty string)
@@ -450,24 +458,38 @@ class GitLabPackageArtifact internal constructor(
     internal inline val project: Project
         get() = packageInstance.packageRegistry.project.server.projectGetter()
 
-    private val localDirectory = project.layout.buildDirectory.dir(directoryName)
-    private val localFile = localDirectory.map { it.file(fileName) }
-    private val outputDirectory = localDirectory.map { if (suffix.isBlank()) it else it.dir(suffix) }
+    /**
+     * The download directory, kept in sync with the project's build directory.
+     */
+    val localDirectory: Provider<Directory> = project.layout.buildDirectory.dir(directoryName)
+
+    /**
+     * The artifact file location. Use [downloadTask] as a dependency when consuming this file.
+     */
+    val localFile: Provider<RegularFile> = localDirectory.map { it.file(fileName) }
+
+    /**
+     * The extraction directory. Use [extractTask] as a dependency when consuming this directory.
+     */
+    val outputDirectory: Provider<Directory> = localDirectory.map { if (suffix.isBlank()) it else it.dir(suffix) }
 
     /**
      * The local directory path where the artifact will be downloaded.
+     * Reading this property resolves [localDirectory].
      */
     val localDirectoryPath: Path
         get() = localDirectory.get().asFile.toPath()
 
     /**
      * The local path where the artifact file will be downloaded.
+     * Reading this property resolves [localFile].
      */
     val localPath: Path
         get() = localFile.get().asFile.toPath()
 
     /**
      * The output directory path where the artifact will be extracted.
+     * Reading this property resolves [outputDirectory].
      *
      * If a suffix is provided, the artifact will be extracted to a subdirectory
      * with that name. Otherwise, it will be extracted to the local directory path.
@@ -484,9 +506,9 @@ class GitLabPackageArtifact internal constructor(
     }
 
     /**
-     * Gradle task that downloads the artifact if it doesn't exist locally.
+     * Gradle task that downloads the artifact if it doesn't exist locally or its checksum differs.
      *
-     * This task will only execute if the artifact hasn't been downloaded yet.
+     * A failed download leaves any previously downloaded artifact intact and fails the task.
      */
     val downloadTask: TaskProvider<Task> = project.tasks.maybeRegister(getTaskName("download")) {
         group = projectName
@@ -498,9 +520,18 @@ class GitLabPackageArtifact internal constructor(
             val filePath = outputs.files.first().toPath()
             val url = "$packageUrl/$fileName"
             logger.lifecycle("Downloading $url..")
-            filePath.deleteIfExists()
             filePath.createParentDirectories()
-            fetchRaw(url)?.use { Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING) }
+            val stream = fetchRaw(url) ?: throw GradleException("Could not download $url")
+            stream.use {
+                val temporaryFile = Files.createTempFile(filePath.parent, ".download-", ".tmp")
+                try {
+                    Files.copy(it, temporaryFile, StandardCopyOption.REPLACE_EXISTING)
+                    Files.move(temporaryFile, filePath, StandardCopyOption.REPLACE_EXISTING)
+                }
+                finally {
+                    temporaryFile.deleteIfExists()
+                }
+            }
             logger.lifecycle("Downloaded $filePath")
         }
         val packageFiles by lazy {
@@ -515,7 +546,10 @@ class GitLabPackageArtifact internal constructor(
                 val hashDigest = packageFile?.hashType?.createDigest()
                 val remoteHash = packageFile?.hash
                 val localHash = if (filePath.exists() && hashDigest != null) {
-                    hashDigest.digest(filePath.readBytes()).joinToString("") { "%02x".format(it) }
+                    DigestInputStream(filePath.inputStream(), hashDigest).use {
+                        it.transferTo(OutputStream.nullOutputStream())
+                    }
+                    hashDigest.digest().joinToString("") { "%02x".format(it) }
                 }
                 else null
                 if (localHash == null) return@onlyIf true
@@ -523,7 +557,7 @@ class GitLabPackageArtifact internal constructor(
                 if (remoteHash == null) return@onlyIf false
                 logger.lifecycle("Got remote hash sum $remoteHash")
                 remoteHash != localHash
-            } catch (_: Throwable) {
+            } catch (_: Exception) {
                 logger.lifecycle("Could not compare hashes, we are likely offline so skip download")
                 false
             }
@@ -553,9 +587,9 @@ class GitLabPackageArtifact internal constructor(
     val cleanTask: TaskProvider<Task> = project.tasks.maybeRegister(getTaskName("clean")) {
         group = projectName
         description = "Deletes the associated artifact from the local filesystem"
-        inputs.file(localFile)
+        val file = localFile
         doFirst {
-            val path = inputs.files.first().toPath()
+            val path = file.get().asFile.toPath()
             path.deleteIfExists()
             logger.lifecycle("Removed $path")
         }

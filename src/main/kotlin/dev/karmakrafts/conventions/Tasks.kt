@@ -25,11 +25,12 @@ import kotlin.io.path.notExists
 /**
  * Lazily register the task if it doesn't exist yet, otherwise
  * return the existing task matching the given name and type.
+ * [configureAction] is only applied when registering a new task.
  */
 inline fun <reified T : Task> TaskContainer.maybeRegister(
     name: String, crossinline configureAction: T.() -> Unit = {}
 ): TaskProvider<T> = when {
-    named { it == name }.isNotEmpty() -> named(name, T::class.java)
+    name in names -> named(name, T::class.java)
     else -> register(name, T::class.java) {
         configureAction()
     }
@@ -39,15 +40,23 @@ inline fun <reified T : Task> TaskContainer.maybeRegister(
  * Creates a task that ensures the build directory exists.
  *
  * This function either finds an existing task named "ensureBuildDirectory" or creates a new one.
- * The task will create the build directory if it doesn't exist.
+ * The task will create the build directory if it doesn't exist. This function realizes the task;
+ * use [ensureBuildDirectoryProvider] for lazy task configuration.
  *
  * @return The task that ensures the build directory exists
  */
 fun TaskContainer.ensureBuildDirectory(): Task {
-    // Lazily registers this task when called and not present
-    return findByName("ensureBuildDirectory") ?: maybeCreate("ensureBuildDirectory").apply {
-        val path = project.layout.buildDirectory.get().asFile.toPath()
-        doLast { path.createDirectories() }
-        onlyIf { path.notExists() }
+    return ensureBuildDirectoryProvider().get()
+}
+
+/**
+ * Lazily registers or returns the task that ensures the build directory exists.
+ * The build directory is resolved when the task runs, so later layout changes are respected.
+ */
+fun TaskContainer.ensureBuildDirectoryProvider(): TaskProvider<Task> {
+    return maybeRegister("ensureBuildDirectory") {
+        val directory = project.layout.buildDirectory
+        doLast { directory.get().asFile.toPath().createDirectories() }
+        onlyIf { directory.get().asFile.toPath().notExists() }
     }
 }

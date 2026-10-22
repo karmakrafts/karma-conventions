@@ -19,7 +19,7 @@ package dev.karmakrafts.conventions
 import org.gradle.api.Project
 import java.net.URI
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -36,13 +36,13 @@ fun ping( // @formatter:off
     readTimeout: Duration = 3.seconds
 ): Duration? { // @formatter:on
     return try {
-        val startTime = System.currentTimeMillis()
+        val startTime = System.nanoTime()
         val connection = URI.create(address).toURL().openConnection()
         connection.connectTimeout = connectTimeout.inWholeMilliseconds.toInt()
         connection.readTimeout = readTimeout.inWholeMilliseconds.toInt()
         connection.inputStream.close()
-        (startTime - System.currentTimeMillis()).milliseconds
-    } catch (error: Throwable) {
+        (System.nanoTime() - startTime).nanoseconds
+    } catch (_: Exception) {
         null
     }
 }

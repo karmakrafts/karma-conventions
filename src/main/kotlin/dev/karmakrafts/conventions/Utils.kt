@@ -26,7 +26,7 @@ import java.net.URLConnection
 import java.nio.file.Path
 import java.security.MessageDigest
 import kotlin.io.path.exists
-import kotlin.io.path.readBytes
+import kotlin.io.path.inputStream
 
 /**
  * Characters that need to be percent-encoded in URLs.
@@ -46,7 +46,14 @@ internal val json: Json = Json {
 internal fun Path.checksum(): String? {
     if (!exists()) return null
     val digest = MessageDigest.getInstance("SHA-1")
-    digest.update(readBytes())
+    inputStream().use { input ->
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        var count = input.read(buffer)
+        while (count != -1) {
+            digest.update(buffer, 0, count)
+            count = input.read(buffer)
+        }
+    }
     return digest.digest().joinToString("") { it.toHexString() }
 }
 
@@ -60,15 +67,15 @@ internal fun Path.checksum(): String? {
  * @return A new string with special characters percent-encoded
  */
 fun String.percentEncode(): String {
-    var encoded = ""
+    val encoded = StringBuilder(length)
     for (char in this) {
         if (char !in SPECIAL_CHARS) {
-            encoded += char
+            encoded.append(char)
             continue
         }
-        encoded += "%${char.code.toUByte().toString(16).uppercase()}"
+        encoded.append('%').append(char.code.toUByte().toString(16).uppercase())
     }
-    return encoded
+    return encoded.toString()
 }
 
 /**
@@ -87,7 +94,7 @@ fun URLConnection.setDefaultUserAgent() {
  *
  * This function makes an HTTP request to the specified address and returns the response
  * as an InputStream. It automatically sets a default user agent and handles the specified
- * HTTP method.
+ * HTTP method. The caller is responsible for closing the returned stream.
  *
  * @param address The URL to fetch data from
  * @param method The HTTP method to use (default is "GET")
@@ -99,11 +106,16 @@ inline fun fetchRaw(
 ): InputStream? {
     return try {
         val connection = URI.create(address).toURL().openConnection() as? HttpURLConnection ?: return null
-        connection.setDefaultUserAgent()
-        connection.requestMethod = method
-        connection.request()
-        connection.inputStream
-    } catch (error: Throwable) {
+        try {
+            connection.setDefaultUserAgent()
+            connection.requestMethod = method
+            connection.request()
+            connection.inputStream
+        } catch (error: Exception) {
+            connection.disconnect()
+            throw error
+        }
+    } catch (error: Exception) {
         null
     }
 }
@@ -124,7 +136,7 @@ inline fun fetchRaw(
 inline fun <reified T> fetch(
     address: String, method: String = "GET", request: HttpURLConnection.() -> Unit = {}
 ): T? = try {
-    fetchRaw(address, method, request)?.let { json.decodeFromStream<T>(it) }
-} catch (error: Throwable) {
+    fetchRaw(address, method, request)?.use { json.decodeFromStream<T>(it) }
+} catch (error: Exception) {
     null
 }

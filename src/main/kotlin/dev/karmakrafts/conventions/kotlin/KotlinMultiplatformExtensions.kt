@@ -340,7 +340,7 @@ inline fun KotlinWasmWasiTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDs
 /**
  * Adds Wasmtime support to a WASI target.
  *
- * @param config The configuration to apply to the Node.js sub-target.
+ * @param config The configuration to apply to the Wasmtime sub-target.
  */
 @OptIn(ExperimentalWasmDsl::class)
 inline fun KotlinWasmWasiTargetDsl.withWasmtime(crossinline config: KotlinWasmtimeDsl.() -> Unit = {}) {

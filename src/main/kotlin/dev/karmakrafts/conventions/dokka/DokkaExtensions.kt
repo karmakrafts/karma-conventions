@@ -49,7 +49,7 @@ internal fun Project.registerDefaultDokkaJar(publishDocs: Boolean) {
             description = "Copies the generated documentation to the specified webroot"
             dependsOn(dokkaHtmlJar)
             mustRunAfter(dokkaHtmlJar)
-            from(zipTree(dokkaHtmlJar.map { task -> task.outputs.files.first() }))
+            from(zipTree(dokkaHtmlJar.flatMap { task -> task.archiveFile }))
             into("$docsDir/${project.name}")
         }
     }
@@ -57,22 +57,24 @@ internal fun Project.registerDefaultDokkaJar(publishDocs: Boolean) {
 
 @PublishedApi
 internal fun Project.registerPublicationDokkaJars() {
-    if (pluginManager.hasPlugin("maven-publish")) extensions.getByType<PublishingExtension>().apply {
-        publications.withType<MavenPublication> publication@{
-            val dokkaJar = tasks.register("${name}DokkaJar", Jar::class) {
-                group = "dokka"
-                description = "Create a javadoc-type JAR with the documentation for the associated module"
-                archiveClassifier.set("javadoc")
-                // Each archive name should be distinct, to avoid implicit dependency issues.
-                // We use the same format as the sources Jar tasks.
-                // https://youtrack.jetbrains.com/issue/KT-46466
-                archiveBaseName.set("${archiveBaseName.get()}-${this@publication.name}")
-                // @formatter:off
-                from(tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
-                    .flatMap { task -> task.outputDirectory })
-                // @formatter:on
+    pluginManager.withPlugin("maven-publish") {
+        extensions.getByType<PublishingExtension>().apply {
+            publications.withType<MavenPublication> publication@{
+                val dokkaJar = tasks.register("${name}DokkaJar", Jar::class) {
+                    group = "dokka"
+                    description = "Create a javadoc-type JAR with the documentation for the associated module"
+                    archiveClassifier.set("javadoc")
+                    // Each archive name should be distinct, to avoid implicit dependency issues.
+                    // We use the same format as the sources Jar tasks.
+                    // https://youtrack.jetbrains.com/issue/KT-46466
+                    archiveBaseName.set("${archiveBaseName.get()}-${this@publication.name}")
+                    // @formatter:off
+                    from(tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
+                        .flatMap { task -> task.outputDirectory })
+                    // @formatter:on
+                }
+                artifact(dokkaJar)
             }
-            artifact(dokkaJar)
         }
     }
 }
@@ -89,7 +91,7 @@ inline fun Project.configureDokka( // @formatter:off
     val dependencyWebsites = config.getWebsites()
     extensions.getByType<DokkaExtension>().apply {
         moduleName.set(this@configureDokka.name)
-        pluginsConfiguration.withType<DokkaHtmlPluginParameters> {
+        pluginsConfiguration.withType<DokkaHtmlPluginParameters>().configureEach {
             this.homepageLink.set(homepageLink)
             footerMessage.set(copyright)
         }

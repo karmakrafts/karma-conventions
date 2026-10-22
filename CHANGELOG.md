@@ -5,6 +5,8 @@
 - `KotlinWasmWasiTargetDsl.withWasmtime` extension for adding a default Wasmtime WASI target
 - `KotlinNativeStandaloneTest` to allow running Kotlin/Native tests from a pre-compiled binary and create JUnit compatible reports from its output
 - `KotlinMultiplatformExtension.withLinuxArm64StandaloneTests` extension for easily registering standalone Linux arm64 tests
+- `TaskContainer.ensureBuildDirectoryProvider` for lazy build-directory task dependencies
+- Provider-backed Git repository and GitLab artifact locations alongside the existing `Path` accessors
 
 ### Deprecated
 
@@ -15,6 +17,19 @@
 - Updated to Kotlin 2.5.0-Beta2
 - Updated to kotlinx.serialization 1.12.0
 - Updated to Dokka 2.3.0-Beta
+- Keep Java version providers lazy for toolchains and compile tasks, and configure plugins applied later
+- Avoid realizing tasks during `maybeRegister` lookup and build-directory dependency wiring
+- Register publication Dokka JARs when the publishing plugin is applied later and use the archive file provider when publishing docs
+- Stream artifact checksums and close JSON response streams
+
+### Fixed
+
+- Respect `targetVersion` for Android Application source and target compatibility
+- Prevent GitLab project-info cache collisions between projects with the same name
+- Fail unsuccessful artifact downloads without replacing an existing download and allow cleaning missing artifacts
+- Avoid fetching a GitLab project's numeric ID when adding its Maven repository
+- Return non-negative, monotonic elapsed times from `ping`
+- Keep the deprecated WASI `withNodeJs` helper compatible with its Node.js configuration lambda
 
 ## [1.22.4]
 

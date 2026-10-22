@@ -17,6 +17,8 @@
 package dev.karmakrafts.conventions
 
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.extensions.stdlib.capitalized
@@ -46,9 +48,18 @@ class GitRepository internal constructor( // @formatter:off
     val group: String
 ) { // @formatter:on
     /**
-     * The local path where the repository will be cloned.
+     * The local directory where the repository will be cloned, resolved lazily.
      */
-    val localPath: Path = project.layout.buildDirectory / name
+    val localDirectory: Provider<Directory> = project.layout.buildDirectory.dir(name)
+
+    /**
+     * The local path where the repository will be cloned.
+     * Reading this property resolves [localDirectory].
+     */
+    val localPath: Path
+        get() = localDirectory.get().asFile.toPath()
+
+    private val buildDirectoryTask = project.tasks.ensureBuildDirectoryProvider()
 
     /**
      * Gradle task that clones the repository if it doesn't exist locally.
@@ -59,12 +70,11 @@ class GitRepository internal constructor( // @formatter:off
     val cloneTask: TaskProvider<Exec> = project.tasks.register<Exec>("clone${name.replace("-", "").capitalized()}") {
         group = this@GitRepository.group
         description = "Clone the associated Git repository"
-        dependsOn(project.tasks.ensureBuildDirectory())
-        workingDir = project.layout.buildDirectory.file
+        dependsOn(buildDirectoryTask)
+        workingDir(project.layout.buildDirectory)
         commandLine(tag?.let {
             listOf("git", "clone", "--branch", tag, "--single-branch", address, this@GitRepository.name)
         } ?: listOf("git", "clone", address, this@GitRepository.name))
-        val localPath = this@GitRepository.localPath
         onlyIf { localPath.notExists() }
     }
 
@@ -78,7 +88,7 @@ class GitRepository internal constructor( // @formatter:off
         group = this@GitRepository.group
         description = "Update the associated Git repository by force-pulling"
         dependsOn(cloneTask)
-        workingDir = localPath.toFile()
+        workingDir(localDirectory)
         commandLine("git", "pull", "--force")
         onlyIf { workingDir.toPath().exists() }
     }
