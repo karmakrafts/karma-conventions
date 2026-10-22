@@ -334,7 +334,9 @@ inline fun KotlinMultiplatformExtension.withWasmJs(
  */
 @Deprecated(message = "NodeJS WASI target is deprecated in Kotlin", replaceWith = ReplaceWith("withWasmtime"))
 inline fun KotlinWasmWasiTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDsl.() -> Unit = {}) {
-    this.wasmtime { config() }
+    nodejs {
+        config()
+    }
 }
 
 /**
