@@ -22,7 +22,6 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder
 import com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest
 import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
-import com.android.build.gradle.internal.crash.afterEvaluate
 import dev.karmakrafts.conventions.EmbeddedDependencies
 import dev.karmakrafts.conventions.PluginIds
 import org.gradle.api.provider.Provider
@@ -496,12 +495,16 @@ inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultHostTests(
             }
         }
     }
-    // Ensure any JVM desktop natives are available on the classpath to the Android host tests
-    afterEvaluate {
+    project.afterEvaluate {
         project.tasks.apply {
-            if(named { name -> name == "jvmProcessResources" }.isEmpty()) return@apply
-            named("testAndroidHostTest", Test::class.java) {
-                classpath = project.files(named("jvmProcessResources")) + classpath
+            // Ensure any JVM desktop natives are available on the classpath to the Android host tests
+            named { it == "testAndroidHostTest" }.withType(Test::class.java).configureEach {
+                dependsOn("jvmProcessResources")
+                val jvmMainResources = project.provider {
+                    project.extensions.getByType<KotlinMultiplatformExtension>()
+                        .sourceSets.getByName("jvmMain").resources.srcDirs
+                }
+                classpath = project.files(named { it == "jvmProcessResources" }, jvmMainResources) + classpath
             }
         }
     }
@@ -535,10 +538,11 @@ inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultDeviceTests(
     }.configure {
         managedDevices {
             val cleanDeviceType = device.replace(" ", "").lowercase()
+            val apiLevelValue = apiLevel.get()
             @Suppress("UnstableApiUsage") //
-            localDevices.create("${cleanDeviceType}Api${apiLevel.get()}") {
+            localDevices.register("${cleanDeviceType}Api$apiLevelValue") {
                 this.device = device
-                this.apiLevel = apiLevel.get().toInt()
+                this.apiLevel = apiLevelValue.toInt()
             }
         }
         // Use androidx.test.ext.junit & androidx.test.runner
