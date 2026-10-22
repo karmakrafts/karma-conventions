@@ -22,9 +22,11 @@ import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder
 import com.android.build.api.dsl.KotlinMultiplatformAndroidDeviceTest
 import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTest
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
+import com.android.build.gradle.internal.crash.afterEvaluate
 import dev.karmakrafts.conventions.EmbeddedDependencies
 import dev.karmakrafts.conventions.PluginIds
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -486,6 +488,23 @@ inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultHostTests(
     }.configure {
         testConfig()
     }
+    // Automatically inject the required runner dependencies to make our lives easier
+    project.extensions.getByType<KotlinMultiplatformExtension>().sourceSets.apply {
+        named("androidHostTest") {
+            dependencies {
+                implementation(EmbeddedDependencies.androidxTestJUnit)
+            }
+        }
+    }
+    // Ensure any JVM desktop natives are available on the classpath to the Android host tests
+    afterEvaluate {
+        project.tasks.apply {
+            if(named { name -> name == "jvmProcessResources" }.isEmpty()) return@apply
+            named("testAndroidHostTest", Test::class.java) {
+                classpath = project.files(named("jvmProcessResources")) + classpath
+            }
+        }
+    }
 }
 
 /**
@@ -528,11 +547,6 @@ inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultDeviceTests(
     }
     // Automatically inject the required runner dependencies to make our lives easier
     project.extensions.getByType<KotlinMultiplatformExtension>().sourceSets.apply {
-        named("androidHostTest") {
-            dependencies {
-                implementation(EmbeddedDependencies.androidxTestJUnit)
-            }
-        }
         named("androidDeviceTest") {
             dependencies {
                 implementation(EmbeddedDependencies.androidxTestJUnit)
