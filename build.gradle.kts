@@ -17,7 +17,6 @@
 import java.net.URI
 import java.time.ZonedDateTime
 import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
@@ -104,7 +103,6 @@ dependencies {
     compileOnly(libs.plugins.android.application.asLibrary())
     compileOnly(libs.plugins.nmcp.asLibrary())
     compileOnly(libs.plugins.dokka.asLibrary())
-    testImplementation(kotlin("test-junit"))
 }
 
 gradlePlugin {

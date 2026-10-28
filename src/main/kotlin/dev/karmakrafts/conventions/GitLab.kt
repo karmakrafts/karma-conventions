@@ -59,7 +59,6 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.inputStream
-import kotlin.io.path.isDirectory
 import kotlin.io.path.outputStream
 
 /**
@@ -350,24 +349,35 @@ class GitLabPackage internal constructor( // @formatter:off
         "android-arm32" to "lib$name.so"
     )
 
-    private fun Task.defaultCopyJniLibrariesCondition() {
-        onlyIf {
-            val inputPath = inputs.files.singleFile.toPath()
-            if (inputPath.isDirectory()) return@onlyIf true // For entire directories, we cannot checksum the input
-            val outputPath = outputs.files.singleFile.toPath()
-            // The output may be a directory, so map the path accordingly
-            val outputFilePath = when {
-                outputPath.isDirectory() -> outputPath / inputPath.fileName
-                else -> outputPath
-            }
-            val currentChecksum = outputFilePath.checksum() ?: return@onlyIf true
-            logger.lifecycle("Current checksum is $currentChecksum")
-            val expectedChecksum = inputPath.checksum() ?: return@onlyIf true
-            logger.lifecycle("Expected checksum is $expectedChecksum")
-            currentChecksum != expectedChecksum
+    private fun Copy.fromJniLibrary(artifact: GitLabPackageArtifact, binaryName: String) {
+        dependsOn(artifact.extractTask)
+        from(artifact.outputDirectory) {
+            include("**/$binaryName")
+            eachFile { path = name }
+            includeEmptyDirs = false
         }
     }
 
+    /**
+     * Registers tasks to copy JNI libraries from this package into JVM resources.
+     *
+     * Each task extracts `build-<platform>-release.zip`, finds the configured binary in any
+     * archive subdirectory, and copies it to `build/generatedJniResources/natives/<platform>`
+     * without preserving its archive path. The generated resource root is added to `main`
+     * for Kotlin/JVM or `jvmMain` for Kotlin Multiplatform.
+     *
+     * The copy tasks are dependencies of `assemble`, `prepareKotlinIdeaImport`, and the JVM
+     * resource processing task.
+     *
+     * @param taskPrefix The prefix used in `copy<Prefix>JniLibraries<Suffix>` task names
+     * @param baseBinaryName The library name without a prefix or extension, used to derive default binary names
+     * @param binaryNames A mapping from platform names to binary file names, defaulting to platform-specific
+     * names with a `lib` prefix and a `.dll`, `.so`, or `.dylib` extension
+     * @param platforms Pairs of platform names and artifact/task suffixes, defaulting to Windows AMD64,
+     * Linux AMD64, Linux ARM64, and macOS ARM64
+     * @return Providers for the registered copy tasks
+     * @throws IllegalArgumentException If a selected platform has no binary name or its binary name is blank
+     */
     fun registerCopyJvmJniLibraryTasks(
         taskPrefix: String,
         baseBinaryName: String,
@@ -379,14 +389,14 @@ class GitLabPackage internal constructor( // @formatter:off
         val tasks = ArrayList<TaskProvider<Copy>>()
         with(project.tasks) {
             for ((name, suffix) in platforms) {
+                val binaryName = requireNotNull(binaryNames[name]) { "No JNI binary configured for platform '$name'" }
+                require(binaryName.isNotBlank()) { "JNI binary name for platform '$name' must not be blank" }
                 val platformArtifact = this@GitLabPackage["build-$name-release.zip", suffix]
                 val copyTask = register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
                     description = "Extracts required JNI natives to the resource root of the JVM"
                     group = "jnilibs"
-                    dependsOn(platformArtifact.extractTask)
-                    from(platformArtifact.extractTask.map { it.destinationDir.resolve(binaryNames[name]!!) })
+                    fromJniLibrary(platformArtifact, binaryName)
                     into(project.layout.buildDirectory.dir("generatedJniResources/natives/$name"))
-                    defaultCopyJniLibrariesCondition()
                 }
                 tasks += copyTask
             }
@@ -400,6 +410,24 @@ class GitLabPackage internal constructor( // @formatter:off
         return tasks
     }
 
+    /**
+     * Registers tasks to copy JNI libraries from this package into Android JNI library directories.
+     *
+     * Each task extracts `build-<platform>-release.zip`, finds the configured binary in any
+     * archive subdirectory, and copies it to `src/<sourceSet>/jniLibs/<abi>` without preserving
+     * its archive path. The source set is `androidMain` for Kotlin Multiplatform or `main` otherwise.
+     *
+     * The copy tasks are dependencies of `assemble`, `prepareKotlinIdeaImport`, and Android tasks
+     * whose names start with `merge` and end with `JniLibFolders`.
+     *
+     * @param taskPrefix The prefix used in `copy<Prefix>JniLibraries<Suffix>` task names
+     * @param baseBinaryName The library name without a prefix or extension, used to derive default binary names
+     * @param binaryNames A mapping from platform names to binary file names, defaulting to `lib<baseBinaryName>.so`
+     * @param platforms Triples of platform names, artifact/task suffixes, and Android ABIs, defaulting to
+     * Android AMD64 (`x86_64`), ARM64 (`arm64-v8a`), and ARM32 (`armeabi-v7a`)
+     * @return Providers for the registered copy tasks
+     * @throws IllegalArgumentException If a selected platform has no binary name or its binary name is blank
+     */
     fun registerCopyAndroidJniLibraryTasks(
         taskPrefix: String,
         baseBinaryName: String,
@@ -413,15 +441,16 @@ class GitLabPackage internal constructor( // @formatter:off
             val sourceSetName = if (isMultiplatform) "androidMain" else "main"
             with(project.tasks) {
                 for ((name, suffix, jniTarget) in platforms) {
+                    val binaryName =
+                        requireNotNull(binaryNames[name]) { "No JNI binary configured for platform '$name'" }
+                    require(binaryName.isNotBlank()) { "JNI binary name for platform '$name' must not be blank" }
                     val platformArtifact = this@GitLabPackage["build-$name-release.zip", suffix]
                     val copyTask =
                         register<Copy>("copy${taskPrefix.capitalized()}JniLibraries${suffix.capitalized()}") {
                             description = "Extracts required JNI natives to the resource root of Android"
                             group = "jnilibs"
-                            dependsOn(platformArtifact.extractTask)
-                            from(platformArtifact.extractTask.map { it.destinationDir.resolve(binaryNames[name]!!) })
-                            into("src/$sourceSetName/jniLibs/$jniTarget")
-                            defaultCopyJniLibrariesCondition()
+                            fromJniLibrary(platformArtifact, binaryName)
+                            into(project.layout.projectDirectory.dir("src/$sourceSetName/jniLibs/$jniTarget"))
                         }
                     // The files should be copied when the project is built AND when a Gradle sync in IDEA happens
                     tasks += copyTask
@@ -514,8 +543,10 @@ class GitLabPackageArtifact internal constructor(
         group = projectName
         description = "Downloads the associated artifact to the local filesystem"
         outputs.file(localFile)
+        outputs.upToDateWhen { false }
         val packageUrl = this@GitLabPackageArtifact.packageUrl
         val fileName = this@GitLabPackageArtifact.fileName
+        val isOffline = project.isOffline
         doLast {
             val filePath = outputs.files.first().toPath()
             val url = "$packageUrl/$fileName"
@@ -541,6 +572,13 @@ class GitLabPackageArtifact internal constructor(
         }
         onlyIf {
             val filePath = outputs.files.first()
+            if (isOffline) {
+                if (!filePath.isFile) {
+                    throw GradleException("Cannot download $packageUrl/$fileName in offline mode: $filePath is missing")
+                }
+                return@onlyIf false
+            }
+            if (!filePath.isFile) return@onlyIf true
             try {
                 val packageFile = packageFiles.find { it.fileName == fileName }
                 val hashDigest = packageFile?.hashType?.createDigest()
@@ -554,7 +592,7 @@ class GitLabPackageArtifact internal constructor(
                 else null
                 if (localHash == null) return@onlyIf true
                 logger.lifecycle("Got local hash sum $localHash")
-                if (remoteHash == null) return@onlyIf false
+                if (remoteHash == null) return@onlyIf true
                 logger.lifecycle("Got remote hash sum $remoteHash")
                 remoteHash != localHash
             } catch (_: Exception) {

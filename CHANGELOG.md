@@ -24,12 +24,12 @@
 
 ### Fixed
 
+- Resolve JNI copy inputs from lazy artifact locations without querying extraction tasks before execution
+- Find JNI libraries in archive subdirectories and flatten their paths when copying to JVM and Android destinations
+- Recheck GitLab artifact checksums on subsequent builds and fail clearly when an artifact is missing in offline mode
 - Respect `targetVersion` for Android Application source and target compatibility
 - Prevent GitLab project-info cache collisions between projects with the same name
 - Fail unsuccessful artifact downloads without replacing an existing download and allow cleaning missing artifacts
-- Avoid fetching a GitLab project's numeric ID when adding its Maven repository
-- Return non-negative, monotonic elapsed times from `ping`
-- Keep the deprecated WASI `withNodeJs` helper compatible with its Node.js configuration lambda
 
 ## [1.22.4]
 
