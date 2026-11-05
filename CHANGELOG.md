@@ -16,8 +16,8 @@
 
 - Updated to Kotlin 2.5.0-Beta2
 - Updated to kotlinx.serialization 1.12.0
-- Updated to Dokka 2.3.0-Beta
-- Updated to AGP 9.5.0
+- Updated to Dokka 2.3.0
+- Updated to AGP 9.5.1
 - Keep Java version providers lazy for toolchains and compile tasks, and configure plugins applied later
 - Avoid realizing tasks during `maybeRegister` lookup and build-directory dependency wiring
 - Register publication Dokka JARs when the publishing plugin is applied later and use the archive file provider when publishing docs
