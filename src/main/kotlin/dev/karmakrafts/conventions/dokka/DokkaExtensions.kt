@@ -34,15 +34,14 @@ import kotlin.io.path.div
 
 @PublishedApi
 internal fun Project.registerDefaultDokkaJar(publishDocs: Boolean) {
-    val dokkaHtmlJar = tasks.register("dokkaHtmlJar", Jar::class) { // @formatter:off
+    val dokkaHtmlJar = tasks.register("dokkaHtmlJar", Jar::class) {
         group = "dokka"
         description = "Creates a JAR with the generated Dokka HTML documentation for uploading"
         archiveClassifier.set("javadoc")
-        // @formatter:off
-        from(tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
-            .flatMap { task -> task.outputDirectory })
-        // @formatter:on
-    } // @formatter:on
+        from(
+            tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
+                .flatMap { task -> task.outputDirectory })
+    }
     if (publishDocs) System.getProperty("publishDocs.root")?.let { docsDir ->
         tasks.register("publishDocs", Copy::class) {
             group = "publishing"
@@ -68,10 +67,9 @@ internal fun Project.registerPublicationDokkaJars() {
                     // We use the same format as the sources Jar tasks.
                     // https://youtrack.jetbrains.com/issue/KT-46466
                     archiveBaseName.set("${archiveBaseName.get()}-${this@publication.name}")
-                    // @formatter:off
-                    from(tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
-                        .flatMap { task -> task.outputDirectory })
-                    // @formatter:on
+                    from(
+                        tasks.named("dokkaGeneratePublicationHtml", DokkaGenerateTask::class.java)
+                            .flatMap { task -> task.outputDirectory })
                 }
                 artifact(dokkaJar)
             }
@@ -79,12 +77,12 @@ internal fun Project.registerPublicationDokkaJars() {
     }
 }
 
-inline fun Project.configureDokka( // @formatter:off
+inline fun Project.configureDokka(
     homepageLink: String = "https://docs.karmakrafts.dev",
     copyright: String = "&copy; ${ZonedDateTime.now().year} Karma Krafts",
     publishDocs: Boolean = true,
     crossinline config: DocumentationConfigSpec = {}
-) { // @formatter:on
+) {
     check(pluginManager.hasPlugin(PluginIds.DOKKA)) { "Dokka plugin must be applied" }
     val config = DocumentationConfig(this, homepageLink).apply(config)
     val dependencyProjects = config.resolveProjects()

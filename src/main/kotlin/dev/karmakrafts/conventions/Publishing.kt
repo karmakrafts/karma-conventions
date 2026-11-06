@@ -283,11 +283,9 @@ fun PublishingExtension.setRepository(server: String, repository: String) {
  * @param description A description of the project
  * @param url The URL of the project (defaults to a Karma Krafts GitLab URL based on the name)
  */
-fun PublishingExtension.setProjectInfo( // @formatter:off
-    name: String,
-    description: String,
-    url: String = "https://git.karmakrafts.dev/kk/$name"
-) { // @formatter:on
+fun PublishingExtension.setProjectInfo(
+    name: String, description: String, url: String = "https://git.karmakrafts.dev/kk/$name"
+) {
     publications.withType<MavenPublication>().configureEach {
         pom {
             this.name.set(name)

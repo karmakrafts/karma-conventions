@@ -32,11 +32,11 @@ data class DocumentationConfig @PublishedApi internal constructor(
     fun dependsOn(project: ProjectDependency) =
         dependsOn("${defaultBaseUrl.removeSuffix("/")}/${project.name}", project)
 
-    fun dependsOn( // @formatter:off
+    fun dependsOn(
         url: String,
         packageListName: String = "package-list",
         packageList: String = "${url.removeSuffix("/")}/$packageListName"
-    ) { // @formatter:on
+    ) {
         dependencies += url to DocumentationDependency.Website(packageList)
     }
 

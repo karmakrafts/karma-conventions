@@ -90,11 +90,9 @@ object GitLabAPI {
      * @property digestProvider A function that creates a new MessageDigest instance for the hash algorithm
      */
     enum class PackageFileHashType(private val digestProvider: () -> MessageDigest) {
-        // @formatter:off
-        MD5     ({ MessageDigest.getInstance("MD5") }),
-        SHA1    ({ MessageDigest.getInstance("SHA-1") }),
-        SHA256  ({ MessageDigest.getInstance("SHA-256") });
-        // @formatter:on
+        MD5({ MessageDigest.getInstance("MD5") }),
+        SHA1({ MessageDigest.getInstance("SHA-1") }),
+        SHA256({ MessageDigest.getInstance("SHA-256") });
 
         /**
          * Creates a new MessageDigest instance for this hash type.

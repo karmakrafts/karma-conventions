@@ -40,13 +40,9 @@ import kotlin.io.path.notExists
  * @property tag Optional tag or branch to checkout (if null, uses the default branch)
  * @property group The Gradle task group name for the repository tasks
  */
-class GitRepository internal constructor( // @formatter:off
-    val project: Project,
-    val name: String,
-    val address: String,
-    val tag: String?,
-    val group: String
-) { // @formatter:on
+class GitRepository internal constructor(
+    val project: Project, val name: String, val address: String, val tag: String?, val group: String
+) {
     /**
      * The local directory where the repository will be cloned, resolved lazily.
      */
@@ -119,11 +115,8 @@ class GitRepository internal constructor( // @formatter:off
  * @param group The Gradle task group name for the repository tasks (defaults to the repository name)
  * @return A GitRepository instance that can be used to reference the repository and its tasks
  */
-fun Project.gitRepository( // @formatter:off
-    name: String,
-    address: String,
-    tag: String? = null,
-    group: String = name
-): GitRepository { // @formatter:on
+fun Project.gitRepository(
+    name: String, address: String, tag: String? = null, group: String = name
+): GitRepository {
     return GitRepository(this, name, address, tag, group)
 }

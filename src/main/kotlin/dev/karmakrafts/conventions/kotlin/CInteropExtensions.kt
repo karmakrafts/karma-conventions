@@ -50,12 +50,9 @@ fun DefaultCInteropSettings.dependsOn(artifact: GitLabPackageArtifact) {
  * @param fileSuffix The suffix of the artifact file name. Defaults to "-release"
  * @param fileExtension The file extension of the package artifact to download. Defaults to "zip"
  */
-fun KotlinNativeTarget.withCInterop( // @formatter:off
-    name: String,
-    pkg: GitLabPackage,
-    fileSuffix: String = "-release",
-    fileExtension: String = "zip"
-) { // @formatter:on
+fun KotlinNativeTarget.withCInterop(
+    name: String, pkg: GitLabPackage, fileSuffix: String = "-release", fileExtension: String = "zip"
+) {
     compilations.named("main") {
         val architecture = konanTarget.accurateArchitectureName
         val extraSuffix = when (konanTarget.family) {

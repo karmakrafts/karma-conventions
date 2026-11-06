@@ -70,10 +70,9 @@ import kotlin.io.path.outputStream
  * @property projectGetter Supplies the Gradle project this GitLab server is associated with
  * @property address The address of the GitLab server (e.g., "gitlab.com")
  */
-class GitLabServer internal constructor( // @formatter:off
-    val address: String,
-    val projectGetter: () -> Project
-) { // @formatter:on
+class GitLabServer internal constructor(
+    val address: String, val projectGetter: () -> Project
+) {
     /**
      * The base URL for the GitLab API.
      */
@@ -113,12 +112,9 @@ class GitLabServer internal constructor( // @formatter:off
  * @property name The name of the project
  * @param givenId The optional ID of the project (if not provided, it will be fetched from the API)
  */
-class GitLabProject internal constructor( // @formatter:off
-    val server: GitLabServer,
-    val endpoint: String,
-    val name: String,
-    givenId: Long?
-) { // @formatter:on
+class GitLabProject internal constructor(
+    val server: GitLabServer, val endpoint: String, val name: String, givenId: Long?
+) {
     private fun computeProjectInfoHash(): String {
         val digest = MessageDigest.getInstance("SHA-256")
         digest.update(endpoint.encodeToByteArray())
@@ -175,10 +171,9 @@ class GitLabProject internal constructor( // @formatter:off
  * @property project The GitLab project this package registry belongs to
  * @property endpoint The API endpoint for this package registry
  */
-class GitLabPackageRegistry internal constructor( // @formatter:off
-    val project: GitLabProject,
-    val endpoint: String
-) { // @formatter:on
+class GitLabPackageRegistry internal constructor(
+    val project: GitLabProject, val endpoint: String
+) {
     companion object {
         private const val PACKAGE_FILE_COUNT: Int = 100
     }
@@ -269,12 +264,9 @@ fun RepositoryHandler.packageRegistry(project: GitLabProject) {
  * @property url The URL of this package
  */
 @OptIn(ExperimentalAtomicApi::class)
-class GitLabPackage internal constructor( // @formatter:off
-    val packageRegistry: GitLabPackageRegistry,
-    val url: String,
-    val path: String,
-    val version: String
-) { // @formatter:on
+class GitLabPackage internal constructor(
+    val packageRegistry: GitLabPackageRegistry, val url: String, val path: String, val version: String
+) {
     private val artifacts: ConcurrentHashMap<String, GitLabPackageArtifact> = ConcurrentHashMap()
 
     /**
@@ -285,11 +277,9 @@ class GitLabPackage internal constructor( // @formatter:off
      * @param directoryName The directory name for the artifact (defaults to the project name)
      * @return A GitLabPackageArtifact instance representing the specified artifact
      */
-    operator fun get( // @formatter:off
-        fileName: String,
-        suffix: String = "",
-        directoryName: String = packageRegistry.project.name
-    ): GitLabPackageArtifact = artifacts.getOrPut("$suffix:$directoryName/$fileName") { // @formatter:on
+    operator fun get(
+        fileName: String, suffix: String = "", directoryName: String = packageRegistry.project.name
+    ): GitLabPackageArtifact = artifacts.getOrPut("$suffix:$directoryName/$fileName") {
         GitLabPackageArtifact(this, url, fileName, suffix, directoryName)
     }
 
@@ -302,26 +292,24 @@ class GitLabPackage internal constructor( // @formatter:off
      * @param directoryName The directory name for the artifact (defaults to the project name)
      * @return A GitLabPackageArtifact instance representing the specified artifact
      */
-    operator fun get( // @formatter:off
-        fileName: Provider<String>,
-        suffix: String = "",
-        directoryName: String = packageRegistry.project.name
-    ): GitLabPackageArtifact = get(fileName.get(), suffix, directoryName) // @formatter:on
+    operator fun get(
+        fileName: Provider<String>, suffix: String = "", directoryName: String = packageRegistry.project.name
+    ): GitLabPackageArtifact = get(fileName.get(), suffix, directoryName)
 
     private val hasJvmJniLibraryResourceRoot: AtomicBoolean = AtomicBoolean(false)
 
-    private val defaultJvmJniPlatforms: List<Pair<String, String>> = listOf( // @formatter:off
+    private val defaultJvmJniPlatforms: List<Pair<String, String>> = listOf(
         "windows-amd64" to "windowsAmd64",
         "linux-amd64" to "linuxAmd64",
         "linux-arm64" to "linuxArm64",
         "macos-arm64" to "macosArm64"
-    ) // @formatter:on
+    )
 
-    private val defaultAndroidJniPlatforms: List<Triple<String, String, String>> = listOf( // @formatter:off
+    private val defaultAndroidJniPlatforms: List<Triple<String, String, String>> = listOf(
         Triple("android-amd64", "androidAmd64", "x86_64"),
         Triple("android-arm64", "androidArm64", "arm64-v8a"),
         Triple("android-arm32", "androidArm32", "armeabi-v7a")
-    ) // @formatter:on
+    )
 
     private fun registerJvmJniLibraryResourceRoot() {
         // This needs to handle both Kotlin/JVM and KMP being used in the given project

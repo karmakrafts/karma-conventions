@@ -31,10 +31,9 @@ fun DocumentationConfig.withJava() {
         "withJava requires Java, Kotlin JVM or Kotlin Multiplatform plugin to be applied"
     }
     val version = project.extensions.getByType<JavaPluginExtension>().toolchain.languageVersion.get().asInt()
-    dependsOn( // @formatter:off
-        url = "https://docs.oracle.com/en/java/javase/$version/docs/api",
-        packageListName = "element-list"
-    ) // @formatter:on
+    dependsOn(
+        url = "https://docs.oracle.com/en/java/javase/$version/docs/api", packageListName = "element-list"
+    )
 }
 
 fun DocumentationConfig.withKotlin() = dependsOn("https://kotlinlang.org/api/core")
@@ -49,10 +48,9 @@ fun DocumentationConfig.withKotlinxSerialization() = dependsOn("https://kotlinla
 
 fun DocumentationConfig.withKtor() = dependsOn("https://api.ktor.io")
 
-fun DocumentationConfig.withGradle() = dependsOn( // @formatter:off
-    url = "https://docs.gradle.org/${project.gradle.gradleVersion}/javadoc",
-    packageListName = "element-list"
-) // @formatter:on
+fun DocumentationConfig.withGradle() = dependsOn(
+    url = "https://docs.gradle.org/${project.gradle.gradleVersion}/javadoc", packageListName = "element-list"
+)
 
 fun DocumentationConfig.withAndroidGradle(version: Provider<String>) {
     dependsOn("https://developer.android.com/reference/tools/gradle-api/${version.get()}")

@@ -47,13 +47,11 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 fun SigningExtension.signPublications() {
     isRequired = false
     System.getenv("SIGNING_KEY_ID")?.let { keyId ->
-        useInMemoryPgpKeys( // @formatter:off
-            keyId,
-            System.getenv("SIGNING_PRIVATE_KEY")?.let { encodedKey ->
+        useInMemoryPgpKeys(
+            keyId, System.getenv("SIGNING_PRIVATE_KEY")?.let { encodedKey ->
                 Base64.decode(encodedKey).decodeToString()
-            },
-            System.getenv("SIGNING_PASSWORD")
-        ) // @formatter:on
+            }, System.getenv("SIGNING_PASSWORD")
+        )
     }
     sign(project.extensions.getByType<PublishingExtension>().publications)
 }

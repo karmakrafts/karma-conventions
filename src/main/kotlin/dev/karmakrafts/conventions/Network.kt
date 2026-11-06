@@ -30,11 +30,9 @@ import kotlin.time.Duration.Companion.seconds
  * @param readTimeout The maximum time to wait for reading data
  * @return The round-trip time as a [Duration] if successful, or null if the ping failed
  */
-fun ping( // @formatter:off
-    address: String, 
-    connectTimeout: Duration = 3.seconds, 
-    readTimeout: Duration = 3.seconds
-): Duration? { // @formatter:on
+fun ping(
+    address: String, connectTimeout: Duration = 3.seconds, readTimeout: Duration = 3.seconds
+): Duration? {
     return try {
         val startTime = System.nanoTime()
         val connection = URI.create(address).toURL().openConnection()
