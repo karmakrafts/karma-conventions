@@ -332,9 +332,10 @@ inline fun KotlinMultiplatformExtension.withWasmJs(
  *
  * @param config The configuration to apply to the Node.js sub-target.
  */
+@Suppress("DEPRECATION") // So linter/formatter doesn't touch this
 @Deprecated(message = "NodeJS WASI target is deprecated in Kotlin", replaceWith = ReplaceWith("withWasmtime"))
 inline fun KotlinWasmWasiTargetDsl.withNodeJs(crossinline config: KotlinJsNodeDsl.() -> Unit = {}) {
-    this.wasmtime { config() }
+    nodejs { config() }
 }
 
 /**
