@@ -59,7 +59,9 @@ fun Int.toJavaVersion(): JavaVersion {
  * @param compileVersion The Java version to compile against (JDK version).
  * @param targetVersion The Java version to produce bytecode for (classfile version).
  */
-fun Project.configureJava(compileVersion: Int, targetVersion: Int = compileVersion) {
+fun Project.configureJava(
+    compileVersion: Int, targetVersion: Int = compileVersion
+) {
     project.pluginManager.apply {
         withPlugin(PluginIds.JAVA) {
             extensions.getByType<JavaPluginExtension>().apply {
@@ -115,7 +117,9 @@ fun Project.configureJava(compileVersion: Int, targetVersion: Int = compileVersi
  * @param targetVersion The Java version to produce bytecode for (classfile version).
  * @see configureJava
  */
-fun Project.configureJava(compileVersion: Provider<String>, targetVersion: Provider<String> = compileVersion) {
+fun Project.configureJava(
+    compileVersion: Provider<String>, targetVersion: Provider<String> = compileVersion
+) {
     project.pluginManager.apply {
         withPlugin(PluginIds.JAVA) {
             extensions.getByType<JavaPluginExtension>().apply {

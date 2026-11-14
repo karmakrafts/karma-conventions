@@ -85,7 +85,9 @@ class GitLabServer internal constructor(
      * @param name A custom name for the project (defaults to the last part of the path)
      * @return A GitLabProject instance representing the specified project
      */
-    fun project(path: String, name: String = path.substringAfterLast('/')): GitLabProject {
+    fun project(
+        path: String, name: String = path.substringAfterLast('/')
+    ): GitLabProject {
         return GitLabProject(this, "$apiUrl/projects/${path.percentEncode()}", name, null)
     }
 
@@ -96,7 +98,9 @@ class GitLabServer internal constructor(
      * @param name A custom name for the project (defaults to the ID as a string)
      * @return A GitLabProject instance representing the specified project
      */
-    fun project(id: Long, name: String = id.toString()): GitLabProject {
+    fun project(
+        id: Long, name: String = id.toString()
+    ): GitLabProject {
         return GitLabProject(this, "$apiUrl/projects/$id", name, id)
     }
 }
@@ -182,13 +186,19 @@ class GitLabPackageRegistry internal constructor(
     private val packageFiles: ConcurrentHashMap<String, List<GitLabAPI.PackageFile>> = ConcurrentHashMap()
     private val packages: ConcurrentHashMap<String, GitLabPackage> = ConcurrentHashMap()
 
-    fun findPackageId(name: String, version: String): Long? {
+    fun findPackageId(
+        name: String, version: String
+    ): Long? {
         return packageInfo.find { it.name == name && it.version == version }?.id
     }
 
-    fun findPackageId(name: String, version: Provider<String>): Long? = findPackageId(name, version.get())
+    fun findPackageId(
+        name: String, version: Provider<String>
+    ): Long? = findPackageId(name, version.get())
 
-    fun getPackageFiles(name: String, version: String): List<GitLabAPI.PackageFile> {
+    fun getPackageFiles(
+        name: String, version: String
+    ): List<GitLabAPI.PackageFile> {
         return packageFiles.getOrPut("$name-$version") {
             val id = findPackageId(name, version) ?: return emptyList()
             fetch("$endpoint/$id/package_files?pagination=keyset&per_page=$PACKAGE_FILE_COUNT&order_by=created_at&sort=asc")
@@ -196,8 +206,9 @@ class GitLabPackageRegistry internal constructor(
         }
     }
 
-    fun getPackageFiles(name: String, version: Provider<String>): List<GitLabAPI.PackageFile> =
-        getPackageFiles(name, version.get())
+    fun getPackageFiles(
+        name: String, version: Provider<String>
+    ): List<GitLabAPI.PackageFile> = getPackageFiles(name, version.get())
 
     /**
      * Gets a package by its path.
@@ -216,7 +227,9 @@ class GitLabPackageRegistry internal constructor(
      * @param version The version of the package
      * @return A GitLabPackage instance representing the specified package version
      */
-    operator fun get(path: String, version: String): GitLabPackage = packages.getOrPut("$path:$version") {
+    operator fun get(
+        path: String, version: String
+    ): GitLabPackage = packages.getOrPut("$path:$version") {
         GitLabPackage(this, "$endpoint/$path/$version", path, version)
     }
 
@@ -228,7 +241,9 @@ class GitLabPackageRegistry internal constructor(
      * @param version A provider for the version of the package
      * @return A GitLabPackage instance representing the specified package version
      */
-    operator fun get(path: String, version: Provider<String>): GitLabPackage = get(path, version.get())
+    operator fun get(
+        path: String, version: Provider<String>
+    ): GitLabPackage = get(path, version.get())
 }
 
 /**
@@ -337,7 +352,9 @@ class GitLabPackage internal constructor(
         "android-arm32" to "lib$name.so"
     )
 
-    private fun Copy.fromJniLibrary(artifact: GitLabPackageArtifact, binaryName: String) {
+    private fun Copy.fromJniLibrary(
+        artifact: GitLabPackageArtifact, binaryName: String
+    ) {
         dependsOn(artifact.extractTask)
         from(artifact.outputDirectory) {
             include("**/$binaryName")
@@ -367,8 +384,7 @@ class GitLabPackage internal constructor(
      * @throws IllegalArgumentException If a selected platform has no binary name or its binary name is blank
      */
     fun registerCopyJvmJniLibraryTasks(
-        taskPrefix: String,
-        baseBinaryName: String,
+        taskPrefix: String, baseBinaryName: String,
         binaryNames: Map<String, String> = getDefaultJniPlatformBinaries(baseBinaryName),
         platforms: List<Pair<String, String>> = defaultJvmJniPlatforms
     ): List<TaskProvider<Copy>> {
@@ -464,10 +480,7 @@ class GitLabPackage internal constructor(
  * @property directoryName The directory name for the artifact
  */
 class GitLabPackageArtifact internal constructor(
-    val packageInstance: GitLabPackage,
-    val packageUrl: String,
-    val fileName: String,
-    val suffix: String,
+    val packageInstance: GitLabPackage, val packageUrl: String, val fileName: String, val suffix: String,
     val directoryName: String
 ) {
     private val projectName: String = packageInstance.packageRegistry.project.name

@@ -79,8 +79,7 @@ internal fun Project.registerPublicationDokkaJars() {
 
 inline fun Project.configureDokka(
     homepageLink: String = "https://docs.karmakrafts.dev",
-    copyright: String = "&copy; ${ZonedDateTime.now().year} Karma Krafts",
-    publishDocs: Boolean = true,
+    copyright: String = "&copy; ${ZonedDateTime.now().year} Karma Krafts", publishDocs: Boolean = true,
     crossinline config: DocumentationConfigSpec = {}
 ) {
     check(pluginManager.hasPlugin(PluginIds.DOKKA)) { "Dokka plugin must be applied" }

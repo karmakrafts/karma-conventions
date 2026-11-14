@@ -73,7 +73,8 @@ object GitLabAPI {
         /**
          * The type of package (e.g., maven, npm, etc.).
          */
-        @SerialName("package_type") val packageType: String,
+        @SerialName("package_type")
+        val packageType: String,
 
         /**
          * The current status of the package.
@@ -127,12 +128,14 @@ object GitLabAPI {
         /**
          * The ID of the parent package this file belongs to.
          */
-        @SerialName("package_id") val packageId: Long,
+        @SerialName("package_id")
+        val packageId: Long,
 
         /**
          * The name of the file.
          */
-        @SerialName("file_name") val fileName: String,
+        @SerialName("file_name")
+        val fileName: String,
 
         /**
          * The size of the file in bytes.
@@ -142,17 +145,20 @@ object GitLabAPI {
         /**
          * The MD5 hash of the file content if present.
          */
-        @SerialName("file_md5") val fileMd5: String?,
+        @SerialName("file_md5")
+        val fileMd5: String?,
 
         /**
          * The SHA1 hash of the file content if present.
          */
-        @SerialName("file_sha1") val fileSha1: String?,
+        @SerialName("file_sha1")
+        val fileSha1: String?,
 
         /**
          * The SHA256 hash of the file content if present.
          */
-        @SerialName("file_sha256") val fileSha256: String?
+        @SerialName("file_sha256")
+        val fileSha256: String?
     ) {
         /**
          * Determines the hash type used for this package file based on which hash property is non-null.

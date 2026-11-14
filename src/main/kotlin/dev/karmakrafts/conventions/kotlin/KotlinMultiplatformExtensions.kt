@@ -446,12 +446,9 @@ inline fun KotlinMultiplatformExtension.withJvm(
  * @param config The configuration to apply to the Android target.
  */
 inline fun KotlinMultiplatformExtension.withAndroid(
-    name: String = "android",
-    namespace: String = project.group.toString(),
-    compileSdk: Provider<String> = project.provider { "36" },
-    minSdk: Provider<String> = project.provider { "24" },
-    targetSdk: Provider<String> = compileSdk,
-    crossinline config: KotlinAndroidTarget.() -> Unit = {}
+    name: String = "android", namespace: String = project.group.toString(),
+    compileSdk: Provider<String> = project.provider { "36" }, minSdk: Provider<String> = project.provider { "24" },
+    targetSdk: Provider<String> = compileSdk, crossinline config: KotlinAndroidTarget.() -> Unit = {}
 ) {
     androidTarget(name) {
         config()
@@ -524,8 +521,7 @@ inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultHostTests(
  * @param testConfig The configuration to apply to the registered device test.
  */
 inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultDeviceTests(
-    sourceSetTreeName: String = "test",
-    device: String = "Pixel 6",
+    sourceSetTreeName: String = "test", device: String = "Pixel 6",
     apiLevel: Provider<String> = project.provider { "36" },
     crossinline compilationConfig: KotlinMultiplatformAndroidCompilationBuilder.() -> Unit = {},
     crossinline testConfig: KotlinMultiplatformAndroidDeviceTest.() -> Unit = {}
@@ -571,10 +567,8 @@ inline fun KotlinMultiplatformAndroidLibraryTarget.withDefaultDeviceTests(
  * @param config The configuration to apply to the Android target.
  */
 inline fun KotlinMultiplatformExtension.withAndroidLibrary(
-    namespace: String = project.group.toString(),
-    compileSdk: Provider<String> = project.provider { "36" },
-    minSdk: Provider<String> = project.provider { "24" },
-    targetSdk: Provider<String> = compileSdk,
+    namespace: String = project.group.toString(), compileSdk: Provider<String> = project.provider { "36" },
+    minSdk: Provider<String> = project.provider { "24" }, targetSdk: Provider<String> = compileSdk,
     crossinline config: KotlinMultiplatformAndroidLibraryTarget.() -> Unit = {}
 ) {
     extensions.configure<KotlinMultiplatformAndroidLibraryTarget>("android") {

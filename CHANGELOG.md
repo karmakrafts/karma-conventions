@@ -14,8 +14,8 @@
 
 ### Changed
 
-- Updated to Kotlin 2.5.0-Beta2
-- Updated to kotlinx.serialization 1.12.0
+- Updated to Kotlin 2.5.0-RC
+- Updated to kotlinx.serialization 1.13.0
 - Updated to Dokka 2.3.0
 - Updated to AGP 9.5.1
 - Keep Java version providers lazy for toolchains and compile tasks, and configure plugins applied later

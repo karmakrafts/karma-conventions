@@ -21,11 +21,13 @@ import org.gradle.api.artifacts.ProjectDependency
 
 @ConsistentCopyVisibility
 data class DocumentationConfig @PublishedApi internal constructor(
-    internal val project: Project,
-    internal val defaultBaseUrl: String,
-    @PublishedApi internal val dependencies: HashSet<Pair<String, DocumentationDependency>> = HashSet()
+    internal val project: Project, internal val defaultBaseUrl: String,
+    @PublishedApi
+    internal val dependencies: HashSet<Pair<String, DocumentationDependency>> = HashSet()
 ) {
-    fun dependsOn(url: String, project: ProjectDependency) {
+    fun dependsOn(
+        url: String, project: ProjectDependency
+    ) {
         dependencies += url to DocumentationDependency.Project(project.path)
     }
 
@@ -33,8 +35,7 @@ data class DocumentationConfig @PublishedApi internal constructor(
         dependsOn("${defaultBaseUrl.removeSuffix("/")}/${project.name}", project)
 
     fun dependsOn(
-        url: String,
-        packageListName: String = "package-list",
+        url: String, packageListName: String = "package-list",
         packageList: String = "${url.removeSuffix("/")}/$packageListName"
     ) {
         dependencies += url to DocumentationDependency.Website(packageList)

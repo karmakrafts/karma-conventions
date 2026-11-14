@@ -184,7 +184,9 @@ abstract class KotlinNativeStandaloneTest @Inject constructor(objectFactory: Obj
         writeAttribute("time", results.sumOf { it.process.seconds }.toString())
     }
 
-    private fun XMLStreamWriter.writeTextElement(name: String, text: String) {
+    private fun XMLStreamWriter.writeTextElement(
+        name: String, text: String
+    ) {
         writeStartElement(name)
         writeCharacters(xmlText(text))
         writeEndElement()
@@ -198,7 +200,9 @@ abstract class KotlinNativeStandaloneTest @Inject constructor(objectFactory: Obj
         }
     }
 
-    private data class TestCase(val suite: String, val name: String) {
+    private data class TestCase(
+        val suite: String, val name: String
+    ) {
         val fullName: String = "$suite.$name"
     }
 
@@ -209,7 +213,9 @@ abstract class KotlinNativeStandaloneTest @Inject constructor(objectFactory: Obj
             get() = listOfNotNull("Exit code: $exitCode", error, stdout, stderr).joinToString("\n")
     }
 
-    private data class TestResult(val test: TestCase, val process: ProcessResult) {
+    private data class TestResult(
+        val test: TestCase, val process: ProcessResult
+    ) {
         val failed: Boolean = process.error == null && process.exitCode != 0
         val skipped: Boolean = process.error == null && process.exitCode == 0 && process.stdout.lineSequence()
             .any { it.trim() == "[  SKIPPED ] ${test.fullName}" }

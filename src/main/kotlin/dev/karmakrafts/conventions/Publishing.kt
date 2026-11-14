@@ -251,7 +251,9 @@ fun PublishingExtension.gplV3License() {
  * @param server The repository server (without protocol prefix)
  * @param repository The repository path (without the .git extension)
  */
-fun PublishingExtension.setRepository(server: String, repository: String) {
+fun PublishingExtension.setRepository(
+    server: String, repository: String
+) {
     publications.withType<MavenPublication>().configureEach {
         pom {
             scm {
