@@ -8,6 +8,7 @@ Following is a basic set of guidelines for contributing to this repository and i
 - [Code of Conduct](#code-of-conduct)
 - [Asking questions](#asking-questions)
 - [Styleguides](#styleguides)
+  - [Code](#code)
   - [Commit message](#commit-messages)
 
 ## Code of Conduct
@@ -20,8 +21,14 @@ For asking questions, please make sure to use [**Discussions**](https://github.c
 
 ## Styleguides
 
+### Code
+
+- Use the supplied IDEA formatter configuration
+- Use the supplied IDEA copyright template 
+
 ### Commit messages
- - Use the present tense ("Add feature" not "Added feature")
- - Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
- - Limit the first line to 72 characters or less
- - Reference issues and pull requests liberally after the first line
+
+- Use the present tense ("Add feature" not "Added feature")
+- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
+- Limit the first line to 72 characters or less
+- Reference issues and pull requests liberally after the first line
