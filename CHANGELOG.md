@@ -14,7 +14,7 @@
 
 ### Changed
 
-- Updated to Gradle 9.9.2
+- Updated to Gradle 9.9.3
 - Updated to Kotlin 2.5.0-RC2
 - Updated to kotlinx.serialization 1.13.0
 - Updated to Dokka 2.3.0
